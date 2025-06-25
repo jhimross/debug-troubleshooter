@@ -1,4 +1,5 @@
-=== Debug & Troubleshooter ===
+** Debug & Troubleshooter **
+
 Contributors: jhimross
 Tags: debug, troubleshoot, site health, php info, theme
 Requires at least: 5.0
@@ -25,7 +26,7 @@ The "Debug & Troubleshooter" plugin provides essential tools for WordPress site 
 
 This plugin is an invaluable tool for developers, site administrators, and anyone who needs to debug WordPress issues without risking site downtime or affecting user experience.
 
-== Installation ==
+Installation
 
 1.  **Download** the plugin ZIP file.
 2.  **Upload** the plugin to your WordPress site:
