@@ -2,10 +2,12 @@
 Contributors: jhimross
 Tags: debug, troubleshoot, site health, php info, theme
 Requires at least: 5.0
+Requires PHP: 7.4
 Tested up to: 6.8
 Stable tag: 1.0.0
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+Donate link: https://example.com/donate
 
 A WordPress plugin for debugging & troubleshooting. Safely simulate plugin deactivation and theme switching for your session only.
 
@@ -68,7 +70,7 @@ A: It shows crucial details like your PHP version, memory limits, WordPress vers
 
 == Changelog ==
 
-= 1.0.0 - 2025-06-25 =
+= 1.0.0 – 2025-06-25 =
 * Initial release.
 * Added comprehensive Site Information display (PHP, WP, Constants, Server).
 * Implemented session-based Troubleshooting Mode for simulated theme switching.
