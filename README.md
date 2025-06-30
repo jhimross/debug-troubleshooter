@@ -6,7 +6,7 @@ A WordPress plugin for debugging & troubleshooting. Safely simulate plugin deact
 
 == Description ==
 
-The "Debug & Troubleshooter" plugin provides essential tools for WordPress site administrators to diagnose and resolve issues efficiently. It offers a dedicated section in the WordPress dashboard that displays comprehensive site health information, similar to the built-in Site Health feature, including PHP version, memory limit, WordPress constants, and active theme/plugin details.
+The "Debugger & Troubleshooter" plugin provides essential tools for WordPress site administrators to diagnose and resolve issues efficiently. It offers a dedicated section in the WordPress dashboard that displays comprehensive site health information, similar to the built-in Site Health feature, including PHP version, memory limit, WordPress constants, and active theme/plugin details.
 
 **Key Features:**
 
