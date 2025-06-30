@@ -1,4 +1,4 @@
-=== Debug & Troubleshooter ===
+=== Debugger & Troubleshooter ===
 Contributors: jhimross
 Tags: debug, troubleshoot, site health, php info, theme
 Requires at least: 5.0
@@ -61,8 +61,6 @@ A: The performance impact is minimal and only applies to the session where Troub
 A: It shows crucial details like your PHP version, memory limits, WordPress version, currently active theme and plugins, and various WordPress constants, which are vital for debugging and understanding your site's configuration.
 
 == Screenshots ==
-
-(No screenshots yet. You would typically add screenshots here demonstrating the plugin's interface.)
 
 1.  Screenshot 1: The main Debug & Troubleshooter dashboard showing Site Information.
 2.  Screenshot 2: The Troubleshooting Mode section with theme and plugin selection.

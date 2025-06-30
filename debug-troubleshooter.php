@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name:       Debug & Troubleshooter
- * Plugin URI:        https://wordpress.org/plugins/debug-troubleshooter
+ * Plugin Name:       Debugger & Troubleshooter
+ * Plugin URI:        https://wordpress.org/plugins/debugger-troubleshooter
  * Description:       A WordPress plugin for debugging and troubleshooting, allowing simulated plugin deactivation and theme switching without affecting the live site.
  * Version:           1.0.0
  * Author:            Jhimross
@@ -75,8 +75,8 @@ class Debug_Troubleshooter {
 	 */
 	public function add_admin_menu() {
 		add_management_page(
-			__( 'Debug & Troubleshooter', 'debug-troubleshooter' ),
-			__( 'Debug & Troubleshooter', 'debug-troubleshooter' ),
+			__( 'Debugger & Troubleshooter', 'debug-troubleshooter' ),
+			__( 'Debugger & Troubleshooter', 'debug-troubleshooter' ),
 			'manage_options',
 			'debug-troubleshooter',
 			array( $this, 'render_admin_page' )
@@ -122,7 +122,7 @@ class Debug_Troubleshooter {
 	public function render_admin_page() {
 		?>
 		<div class="wrap debug-troubleshooter-wrap">
-			<h1 class="wp-heading-inline"><?php esc_html_e( 'Debug & Troubleshooter', 'debug-troubleshooter' ); ?></h1>
+			<h1 class="wp-heading-inline"><?php esc_html_e( 'Debugger & Troubleshooter', 'debug-troubleshooter' ); ?></h1>
 			<hr class="wp-header-end">
 
 			<div class="debug-troubleshooter-content">
