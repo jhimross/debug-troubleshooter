@@ -3,7 +3,7 @@
  * Plugin Name:       Debugger & Troubleshooter
  * Plugin URI:        https://wordpress.org/plugins/debugger-troubleshooter
  * Description:       A WordPress plugin for debugging and troubleshooting, allowing simulated plugin deactivation and theme switching without affecting the live site.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            Jhimross
  * Author URI:        https://jhimross.com
  * License:           GPL-2.0+
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Define plugin constants.
  */
-define( 'DBGTBL_VERSION', '1.0.0' );
+define( 'DBGTBL_VERSION', '1.1.0' );
 define( 'DBGTBL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DBGTBL_URL', plugin_dir_url( __FILE__ ) );
 define( 'DBGTBL_BASENAME', plugin_basename( __FILE__ ) );
@@ -112,6 +112,10 @@ class Debug_Troubleshooter {
 				'current_theme'       => get_stylesheet(),
 				'alert_title_success' => __( 'Success', 'debug-troubleshooter' ),
 				'alert_title_error'   => __( 'Error', 'debug-troubleshooter' ),
+				'copy_button_text'    => __( 'Copy to Clipboard', 'debug-troubleshooter' ),
+				'copied_button_text'  => __( 'Copied!', 'debug-troubleshooter' ),
+				'show_all_text'       => __( 'Show All', 'debug-troubleshooter' ),
+				'hide_text'           => __( 'Hide', 'debug-troubleshooter' ),
 			)
 		);
 	}
@@ -127,74 +131,81 @@ class Debug_Troubleshooter {
 
 			<div class="debug-troubleshooter-content">
 				<div class="debug-troubleshooter-section">
-					<h2><?php esc_html_e( 'Site Information', 'debug-troubleshooter' ); ?></h2>
-					<?php $this->display_site_info(); ?>
+					<div class="section-header">
+						<h2><?php esc_html_e( 'Site Information', 'debug-troubleshooter' ); ?></h2>
+						<button id="copy-site-info" class="button button-secondary"><?php esc_html_e( 'Copy to Clipboard', 'debug-troubleshooter' ); ?></button>
+					</div>
+					<div id="site-info-content" class="section-content">
+						<?php $this->display_site_info(); ?>
+					</div>
 				</div>
 
-				<div class="debug-troubleshooter-section">
-					<h2 class="flex justify-between items-center">
-						<span><?php esc_html_e( 'Troubleshooting Mode', 'debug-troubleshooter' ); ?></span>
+				<div class="debug-troubleshooter-section standalone-section">
+					<div class="section-header">
+						<h2><?php esc_html_e( 'Troubleshooting Mode', 'debug-troubleshooter' ); ?></h2>
 						<button id="troubleshoot-mode-toggle" class="button button-large <?php echo $this->is_troubleshooting_active() ? 'button-danger' : 'button-primary'; ?>">
 							<?php echo $this->is_troubleshooting_active() ? esc_html__( 'Exit Troubleshooting Mode', 'debug-troubleshooter' ) : esc_html__( 'Enter Troubleshooting Mode', 'debug-troubleshooter' ); ?>
 						</button>
-					</h2>
-					<p class="description">
-						<?php esc_html_e( 'Enter Troubleshooting Mode to simulate deactivating plugins and switching themes without affecting your live website for other visitors. This mode uses browser cookies and only applies to your session.', 'debug-troubleshooter' ); ?>
-					</p>
+					</div>
+					<div class="section-content">
+						<p class="description">
+							<?php esc_html_e( 'Enter Troubleshooting Mode to simulate deactivating plugins and switching themes without affecting your live website for other visitors. This mode uses browser cookies and only applies to your session.', 'debug-troubleshooter' ); ?>
+						</p>
 
-					<div id="troubleshoot-mode-controls" class="troubleshoot-mode-controls <?php echo $this->is_troubleshooting_active() ? '' : 'hidden'; ?>">
-						<div class="debug-troubleshooter-card">
-							<h3><?php esc_html_e( 'Simulate Theme Switch', 'debug-troubleshooter' ); ?></h3>
-							<p class="description"><?php esc_html_e( 'Select a theme to preview. This will change the theme for your session only.', 'debug-troubleshooter' ); ?></p>
-							<select id="troubleshoot-theme-select" class="regular-text">
+						<div id="troubleshoot-mode-controls" class="troubleshoot-mode-controls <?php echo $this->is_troubleshooting_active() ? '' : 'hidden'; ?>">
+							<div class="debug-troubleshooter-card">
+								<h3><?php esc_html_e( 'Simulate Theme Switch', 'debug-troubleshooter' ); ?></h3>
+								<p class="description"><?php esc_html_e( 'Select a theme to preview. This will change the theme for your session only.', 'debug-troubleshooter' ); ?></p>
+								<select id="troubleshoot-theme-select" class="regular-text">
+									<?php
+									$themes           = wp_get_themes();
+									$current_active   = get_stylesheet();
+									$troubleshoot_theme = $this->troubleshoot_state && ! empty( $this->troubleshoot_state['theme'] ) ? $this->troubleshoot_state['theme'] : $current_active;
+
+									foreach ( $themes as $slug => $theme ) {
+										echo '<option value="' . esc_attr( $slug ) . '"' . selected( $slug, $troubleshoot_theme, false ) . '>' . esc_html( $theme->get( 'Name' ) ) . '</option>';
+									}
+									?>
+								</select>
+							</div>
+
+							<div class="debug-troubleshooter-card">
+								<h3><?php esc_html_e( 'Simulate Plugin Deactivation', 'debug-troubleshooter' ); ?></h3>
+								<p class="description"><?php esc_html_e( 'Check plugins to simulate deactivating them for your session. Unchecked plugins will remain active.', 'debug-troubleshooter' ); ?></p>
 								<?php
-								$themes           = wp_get_themes();
-								$current_active   = get_stylesheet();
-								$troubleshoot_theme = $this->troubleshoot_state && ! empty( $this->troubleshoot_state['theme'] ) ? $this->troubleshoot_state['theme'] : $current_active;
+								$plugins                = get_plugins();
+								$troubleshoot_active_plugins = $this->troubleshoot_state && ! empty( $this->troubleshoot_state['plugins'] ) ? $this->troubleshoot_state['plugins'] : get_option( 'active_plugins', array() );
+								$troubleshoot_active_sitewide_plugins = $this->troubleshoot_state && ! empty( $this->troubleshoot_state['sitewide_plugins'] ) ? $this->troubleshoot_state['sitewide_plugins'] : ( is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', array() ) ) : array() );
 
-								foreach ( $themes as $slug => $theme ) {
-									echo '<option value="' . esc_attr( $slug ) . '"' . selected( $slug, $troubleshoot_theme, false ) . '>' . esc_html( $theme->get( 'Name' ) ) . '</option>';
+								if ( ! empty( $plugins ) ) {
+									echo '<div class="plugin-list">';
+									foreach ( $plugins as $plugin_file => $plugin_data ) {
+										$is_active_for_site = in_array( $plugin_file, get_option( 'active_plugins', array() ) ) || ( is_multisite() && array_key_exists( $plugin_file, get_site_option( 'active_sitewide_plugins', array() ) ) );
+										$is_checked_in_troubleshoot_mode = (
+											in_array( $plugin_file, $troubleshoot_active_plugins ) ||
+											( is_multisite() && in_array( $plugin_file, $troubleshoot_active_sitewide_plugins ) )
+										);
+										?>
+										<label class="plugin-item flex items-center p-2 rounded-md transition-colors duration-200">
+											<input type="checkbox" name="troubleshoot_plugins[]" value="<?php echo esc_attr( $plugin_file ); ?>" <?php checked( $is_checked_in_troubleshoot_mode ); ?> data-original-state="<?php echo $is_active_for_site ? 'active' : 'inactive'; ?>">
+											<span class="ml-2">
+												<strong><?php echo esc_html( $plugin_data['Name'] ); ?></strong>
+												<br><small><?php echo esc_html( $plugin_data['Version'] ); ?> | <?php echo esc_html( $plugin_data['AuthorName'] ); ?></small>
+											</span>
+										</label>
+										<?php
+									}
+									echo '</div>';
+								} else {
+									echo '<p>' . esc_html__( 'No plugins found.', 'debug-troubleshooter' ) . '</p>';
 								}
 								?>
-							</select>
-						</div>
+							</div>
 
-						<div class="debug-troubleshooter-card">
-							<h3><?php esc_html_e( 'Simulate Plugin Deactivation', 'debug-troubleshooter' ); ?></h3>
-							<p class="description"><?php esc_html_e( 'Check plugins to simulate deactivating them for your session. Unchecked plugins will remain active.', 'debug-troubleshooter' ); ?></p>
-							<?php
-							$plugins                = get_plugins();
-							$troubleshoot_active_plugins = $this->troubleshoot_state && ! empty( $this->troubleshoot_state['plugins'] ) ? $this->troubleshoot_state['plugins'] : get_option( 'active_plugins', array() );
-							$troubleshoot_active_sitewide_plugins = $this->troubleshoot_state && ! empty( $this->troubleshoot_state['sitewide_plugins'] ) ? $this->troubleshoot_state['sitewide_plugins'] : ( is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', array() ) ) : array() );
-
-							if ( ! empty( $plugins ) ) {
-								echo '<div class="plugin-list">';
-								foreach ( $plugins as $plugin_file => $plugin_data ) {
-									$is_active_for_site = in_array( $plugin_file, get_option( 'active_plugins', array() ) ) || ( is_multisite() && array_key_exists( $plugin_file, get_site_option( 'active_sitewide_plugins', array() ) ) );
-									$is_checked_in_troubleshoot_mode = (
-										in_array( $plugin_file, $troubleshoot_active_plugins ) ||
-										( is_multisite() && in_array( $plugin_file, $troubleshoot_active_sitewide_plugins ) )
-									);
-									?>
-									<label class="plugin-item flex items-center p-2 rounded-md transition-colors duration-200">
-										<input type="checkbox" name="troubleshoot_plugins[]" value="<?php echo esc_attr( $plugin_file ); ?>" <?php checked( $is_checked_in_troubleshoot_mode ); ?> data-original-state="<?php echo $is_active_for_site ? 'active' : 'inactive'; ?>">
-										<span class="ml-2">
-											<strong><?php echo esc_html( $plugin_data['Name'] ); ?></strong>
-											<br><small><?php echo esc_html( $plugin_data['Version'] ); ?> | <?php echo esc_html( $plugin_data['AuthorName'] ); ?></small>
-										</span>
-									</label>
-									<?php
-								}
-								echo '</div>';
-							} else {
-								echo '<p>' . esc_html__( 'No plugins found.', 'debug-troubleshooter' ) . '</p>';
-							}
-							?>
-						</div>
-
-						<button id="apply-troubleshoot-changes" class="button button-primary button-large"><?php esc_html_e( 'Apply Troubleshooting Changes', 'debug-troubleshooter' ); ?></button>
-						<p class="description"><?php esc_html_e( 'Applying changes will refresh the page to reflect your simulated theme and plugin states.', 'debug-troubleshooter' ); ?></p>
-					</div><!-- #troubleshoot-mode-controls -->
+							<button id="apply-troubleshoot-changes" class="button button-primary button-large"><?php esc_html_e( 'Apply Troubleshooting Changes', 'debug-troubleshooter' ); ?></button>
+							<p class="description"><?php esc_html_e( 'Applying changes will refresh the page to reflect your simulated theme and plugin states.', 'debug-troubleshooter' ); ?></p>
+						</div><!-- #troubleshoot-mode-controls -->
+					</div>
 				</div>
 			</div>
 		</div>
@@ -214,60 +225,117 @@ class Debug_Troubleshooter {
 	 * Displays useful site information.
 	 */
 	private function display_site_info() {
-		echo '<div class="debug-troubleshooter-card">';
-		echo '<h3>' . esc_html__( 'PHP Information', 'debug-troubleshooter' ) . '</h3>';
+		global $wpdb;
+		echo '<div class="site-info-grid">';
+
+		// WordPress Information Card
+		echo '<div class="debug-troubleshooter-card collapsible">';
+		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'WordPress Information', 'debug-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
+		echo '<div class="card-collapsible-content hidden">';
+		echo '<p><strong>' . esc_html__( 'WordPress Version:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( get_bloginfo( 'version' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Site Language:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( get_locale() ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Permalink Structure:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( get_option( 'permalink_structure' ) ?: 'Plain' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Multisite:', 'debug-troubleshooter' ) . '</strong> ' . ( is_multisite() ? 'Yes' : 'No' ) . '</p>';
+
+		// Themes List
+		$all_themes            = wp_get_themes();
+		$active_theme_obj      = wp_get_theme();
+		$inactive_themes_count = count( $all_themes ) - 1;
+
+		echo '<h4>' . esc_html__( 'Themes', 'debug-troubleshooter' ) . '</h4>';
+		echo '<p><strong>' . esc_html__( 'Active Theme:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( $active_theme_obj->get( 'Name' ) ) . ' (' . esc_html( $active_theme_obj->get( 'Version' ) ) . ')</p>';
+		if ( $inactive_themes_count > 0 ) {
+			echo '<p><strong>' . esc_html__( 'Inactive Themes:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( $inactive_themes_count ) . ' <a href="#" class="info-sub-list-toggle" data-target="themes-list">' . esc_html__( 'Show All', 'debug-troubleshooter' ) . '</a></p>';
+		}
+
+		if ( ! empty( $all_themes ) ) {
+			echo '<ul id="themes-list" class="info-sub-list hidden">';
+			foreach ( $all_themes as $stylesheet => $theme ) {
+				$status = ( $stylesheet === $active_theme_obj->get_stylesheet() ) ? '<span class="status-active">Active</span>' : '<span class="status-inactive">Inactive</span>';
+				echo '<li><div>' . esc_html( $theme->get( 'Name' ) ) . ' (' . esc_html( $theme->get( 'Version' ) ) . ')</div>' . $status . '</li>';
+			}
+			echo '</ul>';
+		}
+
+		// Plugins List
+		$all_plugins            = get_plugins();
+		$active_plugins         = (array) get_option( 'active_plugins', array() );
+		$network_active_plugins = is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', array() ) ) : array();
+		$inactive_plugins_count = count( $all_plugins ) - count( $active_plugins ) - count( $network_active_plugins );
+
+		echo '<h4>' . esc_html__( 'Plugins', 'debug-troubleshooter' ) . '</h4>';
+		echo '<p><strong>' . esc_html__( 'Active Plugins:', 'debug-troubleshooter' ) . '</strong> ' . count( $active_plugins ) . '</p>';
+		if ( is_multisite() ) {
+			echo '<p><strong>' . esc_html__( 'Network Active Plugins:', 'debug-troubleshooter' ) . '</strong> ' . count( $network_active_plugins ) . '</p>';
+		}
+		echo '<p><strong>' . esc_html__( 'Inactive Plugins:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( $inactive_plugins_count ) . ' <a href="#" class="info-sub-list-toggle" data-target="plugins-list">' . esc_html__( 'Show All', 'debug-troubleshooter' ) . '</a></p>';
+
+		if ( ! empty( $all_plugins ) ) {
+			echo '<ul id="plugins-list" class="info-sub-list hidden">';
+			foreach ( $all_plugins as $plugin_file => $plugin_data ) {
+				$status = '<span class="status-inactive">Inactive</span>';
+				if ( in_array( $plugin_file, $active_plugins, true ) ) {
+					$status = '<span class="status-active">Active</span>';
+				} elseif ( in_array( $plugin_file, $network_active_plugins, true ) ) {
+					$status = '<span class="status-network-active">Network Active</span>';
+				}
+				echo '<li><div>' . esc_html( $plugin_data['Name'] ) . ' (' . esc_html( $plugin_data['Version'] ) . ')</div>' . $status . '</li>';
+			}
+			echo '</ul>';
+		}
+
+		echo '</div></div>';
+
+		// PHP Information Card
+		echo '<div class="debug-troubleshooter-card collapsible">';
+		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'PHP Information', 'debug-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
+		echo '<div class="card-collapsible-content hidden">';
 		echo '<p><strong>' . esc_html__( 'PHP Version:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( phpversion() ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'Memory Limit:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'memory_limit' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Peak Memory Usage:', 'debug-troubleshooter' ) . '</strong> ' . size_format( memory_get_peak_usage( true ) ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'Post Max Size:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'post_max_size' ) ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'Upload Max Filesize:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'upload_max_filesize' ) ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'Max Execution Time:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'max_execution_time' ) ) . 's</p>';
-		echo '<p><strong>' . esc_html__( 'Max Input Time:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'max_input_time' ) ) . 's</p>';
-		echo '<p><strong>' . esc_html__( 'Default Charset:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'default_charset' ) ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Display Errors:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'display_errors' ) ? 'On' : 'Off' ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Log Errors:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'log_errors' ) ? 'On' : 'Off' ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Error Log File:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'error_log' ) ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Open BaseDir:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'open_basedir' ) ? ini_get( 'open_basedir' ) : 'Not Set' ) . '</p>';
-		echo '</div>';
+		echo '<p><strong>' . esc_html__( 'Max Input Vars:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'max_input_vars' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'cURL Extension:', 'debug-troubleshooter' ) . '</strong> ' . ( extension_loaded( 'curl' ) ? 'Enabled' : 'Disabled' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'GD Library:', 'debug-troubleshooter' ) . '</strong> ' . ( extension_loaded( 'gd' ) ? 'Enabled' : 'Disabled' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Imagick Library:', 'debug-troubleshooter' ) . '</strong> ' . ( extension_loaded( 'imagick' ) ? 'Enabled' : 'Disabled' ) . '</p>';
+		echo '</div></div>';
 
-		echo '<div class="debug-troubleshooter-card">';
-		echo '<h3>' . esc_html__( 'WordPress Information', 'debug-troubleshooter' ) . '</h3>';
-		echo '<p><strong>' . esc_html__( 'WordPress Version:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( get_bloginfo( 'version' ) ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Active Theme:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( wp_get_theme()->get( 'Name' ) ) . ' (' . esc_html( wp_get_theme()->get_stylesheet() ) . ')</p>';
+		// Database Information Card
+		echo '<div class="debug-troubleshooter-card collapsible">';
+		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'Database Information', 'debug-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
+		echo '<div class="card-collapsible-content hidden">';
+		echo '<p><strong>' . esc_html__( 'Database Engine:', 'debug-troubleshooter' ) . '</strong> MySQL</p>';
+		echo '<p><strong>' . esc_html__( 'MySQL Version:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( $wpdb->get_var( 'SELECT VERSION()' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'DB Name:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( DB_NAME ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'DB Host:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( DB_HOST ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'DB Charset:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( DB_CHARSET ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'DB Collate:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( DB_COLLATE ) . '</p>';
+		echo '</div></div>';
 
-		$active_plugins = get_option( 'active_plugins' );
-		$active_plugin_names = array();
-		if ( ! empty( $active_plugins ) ) {
-			foreach ( $active_plugins as $plugin ) {
-				// Use `get_plugin_data` to get plugin details safely.
-				if ( file_exists( WP_PLUGIN_DIR . '/' . $plugin ) ) {
-					$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $plugin );
-					$active_plugin_names[] = $plugin_data['Name'];
-				}
-			}
-		}
-		echo '<p><strong>' . esc_html__( 'Active Plugins:', 'debug-troubleshooter' ) . '</strong> ' . ( ! empty( $active_plugin_names ) ? esc_html( implode( ', ', $active_plugin_names ) ) : esc_html__( 'None', 'debug-troubleshooter' ) ) . '</p>';
+		// Server Information Card
+		echo '<div class="debug-troubleshooter-card collapsible">';
+		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'Server Information', 'debug-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
+		echo '<div class="card-collapsible-content hidden">';
+		echo '<p><strong>' . esc_html__( 'Web Server:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : 'N/A' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Server Protocol:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['SERVER_PROTOCOL'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_PROTOCOL'] ) ) : 'N/A' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Server Address:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : 'N/A' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Document Root:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['DOCUMENT_ROOT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['DOCUMENT_ROOT'] ) ) : 'N/A' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'HTTPS:', 'debug-troubleshooter' ) . '</strong> ' . ( is_ssl() ? 'On' : 'Off' ) . '</p>';
+		echo '</div></div>';
 
-		if ( is_multisite() ) {
-			$active_sitewide_plugins = get_site_option( 'active_sitewide_plugins' );
-			$sitewide_plugin_names = array();
-			if ( ! empty( $active_sitewide_plugins ) ) {
-				foreach ( $active_sitewide_plugins as $plugin_file => $data ) {
-					// Use `get_plugin_data` to get plugin details safely.
-					if ( file_exists( WP_PLUGIN_DIR . '/' . $plugin_file ) ) {
-						$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $plugin_file );
-						$sitewide_plugin_names[] = $plugin_data['Name'];
-					}
-				}
-			}
-			echo '<p><strong>' . esc_html__( 'Active Network Plugins:', 'debug-troubleshooter' ) . '</strong> ' . ( ! empty( $sitewide_plugin_names ) ? esc_html( implode( ', ', $sitewide_plugin_names ) ) : esc_html__( 'None', 'debug-troubleshooter' ) ) . '</p>';
-		}
-
-		echo '</div>';
-
-		echo '<div class="debug-troubleshooter-card">';
-		echo '<h3>' . esc_html__( 'WordPress Constants', 'debug-troubleshooter' ) . '</h3>';
+		// WordPress Constants Card
+		echo '<div class="debug-troubleshooter-card collapsible">';
+		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'WordPress Constants', 'debug-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
+		echo '<div class="card-collapsible-content hidden">';
 		echo '<ul>';
 		$wp_constants = array(
+			'WP_ENVIRONMENT_TYPE',
+			'WP_HOME',
+			'WP_SITEURL',
+			'WP_CONTENT_DIR',
+			'WP_PLUGIN_DIR',
 			'WP_DEBUG',
 			'WP_DEBUG_DISPLAY',
 			'WP_DEBUG_LOG',
@@ -275,18 +343,12 @@ class Debug_Troubleshooter {
 			'WP_MEMORY_LIMIT',
 			'WP_MAX_MEMORY_LIMIT',
 			'CONCATENATE_SCRIPTS',
-			'COMPRESS_SCRIPTS',
-			'COMPRESS_CSS',
-			'UPLOADS',
-			'WP_POST_REVISIONS',
-			'EMPTY_TRASH_DAYS',
-			'AUTOSAVE_INTERVAL',
 			'WP_CACHE',
 			'DISABLE_WP_CRON',
-			'ALTERNATE_WP_CRON',
 			'DISALLOW_FILE_EDIT',
-			'DISALLOW_FILE_MODS',
 			'FS_METHOD',
+			'FS_CHMOD_DIR',
+			'FS_CHMOD_FILE',
 		);
 		foreach ( $wp_constants as $constant ) {
 			echo '<li><strong>' . esc_html( $constant ) . ':</strong> ';
@@ -296,11 +358,10 @@ class Debug_Troubleshooter {
 					echo esc_html( $value ? 'true' : 'false' );
 				} elseif ( is_numeric( $value ) ) {
 					echo esc_html( $value );
-				} elseif ( is_string( $value ) ) {
+				} elseif ( is_string( $value ) && ! empty( $value ) ) {
 					echo '"' . esc_html( $value ) . '"';
 				} else {
-					// For arrays/objects or other complex types, just note it as 'Defined'.
-					echo esc_html__( 'Defined', 'debug-troubleshooter' );
+					echo esc_html__( 'Defined but empty/non-scalar', 'debug-troubleshooter' );
 				}
 			} else {
 				echo esc_html__( 'Undefined', 'debug-troubleshooter' );
@@ -308,15 +369,9 @@ class Debug_Troubleshooter {
 			echo '</li>';
 		}
 		echo '</ul>';
-		echo '</div>';
+		echo '</div></div>';
 
-    	echo '<div class="debug-troubleshooter-card">';
-		echo '<h3>' . esc_html__( 'Server Information', 'debug-troubleshooter' ) . '</h3>';
-		// Applying sanitize_text_field for stricter adherence to input sanitization warnings
-		echo '<p><strong>' . esc_html__( 'Web Server:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : __( 'N/A', 'debug-troubleshooter' ) ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Server Address:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : __( 'N/A', 'debug-troubleshooter' ) ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Port:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['SERVER_PORT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_PORT'] ) ) : __( 'N/A', 'debug-troubleshooter' ) ) . '</p>';
-		echo '</div>';
+		echo '</div>'; // End .site-info-grid
 	}
 
 	/**
@@ -325,7 +380,8 @@ class Debug_Troubleshooter {
 	 */
 	public function init_troubleshooting_mode() {
 		if ( isset( $_COOKIE[ self::TROUBLESHOOT_COOKIE ] ) ) {
-			$this->troubleshoot_state = json_decode( sanitize_text_field( wp_unslash( $_COOKIE[ self::TROUBLESHOOT_COOKIE ] ) ), true );
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$this->troubleshoot_state = json_decode( wp_unslash( $_COOKIE[ self::TROUBLESHOOT_COOKIE ] ), true );
 
 			if ( ! empty( $this->troubleshoot_state ) ) {
 				// Filter active plugins.
@@ -393,8 +449,8 @@ class Debug_Troubleshooter {
 	/**
 	 * Filters the active theme based on troubleshooting state.
 	 *
-	 * @param string $theme The active theme stylesheet or template.
-	 * @return string Filtered theme stylesheet or template.
+	 * @param string|false $theme The active theme stylesheet or template.
+	 * @return string|false Filtered theme stylesheet or template.
 	 */
 	public function filter_theme( $theme ) {
 		if ( $this->is_troubleshooting_active() && isset( $this->troubleshoot_state['theme'] ) ) {
@@ -428,7 +484,7 @@ class Debug_Troubleshooter {
 				'timestamp'      => time(),
 			);
 			// Set cookie with HttpOnly flag for security, and secure flag if site is HTTPS.
-			setcookie( self::TROUBLESHOOT_COOKIE, json_encode( $state ), array(
+			setcookie( self::TROUBLESHOOT_COOKIE, wp_json_encode( $state ), array(
 				'expires'  => time() + DAY_IN_SECONDS,
 				'path'     => COOKIEPATH,
 				'domain'   => COOKIE_DOMAIN,
@@ -463,10 +519,9 @@ class Debug_Troubleshooter {
 
 		// Sanitize inputs.
 		$selected_theme   = isset( $_POST['theme'] ) ? sanitize_text_field( wp_unslash( $_POST['theme'] ) ) : get_stylesheet();
-		$selected_plugins = isset( $_POST['plugins'] ) ? array_map( 'sanitize_text_field', wp_unslash( (array) $_POST['plugins'] ) ) : array();
+		$selected_plugins = isset( $_POST['plugins'] ) && is_array( $_POST['plugins'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['plugins'] ) ) : array();
 
 		// For multisite, we need to distinguish regular active plugins from network active ones.
-		// For simplicity, we'll store network active plugins as an indexed array in the cookie as well.
 		$all_plugins = get_plugins(); // Get all installed plugins to validate existence.
 		$current_sitewide_plugins = is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', array() ) ) : array();
 
@@ -477,7 +532,7 @@ class Debug_Troubleshooter {
 			// Check if the plugin file actually exists in the plugin directory.
 			if ( isset( $all_plugins[ $plugin_file ] ) ) {
 				// If it's a network active plugin, add it to the sitewide array.
-				if ( is_multisite() && in_array( $plugin_file, $current_sitewide_plugins ) ) {
+				if ( is_multisite() && in_array( $plugin_file, $current_sitewide_plugins, true ) ) {
 					$new_active_sitewide_plugins[] = $plugin_file;
 				} else {
 					// Otherwise, add to regular active plugins.
@@ -494,7 +549,7 @@ class Debug_Troubleshooter {
 		);
 
 		// Set cookie with HttpOnly flag for security, and secure flag if site is HTTPS.
-		setcookie( self::TROUBLESHOOT_COOKIE, json_encode( $state ), array(
+		setcookie( self::TROUBLESHOOT_COOKIE, wp_json_encode( $state ), array(
 			'expires'  => time() + DAY_IN_SECONDS,
 			'path'     => COOKIEPATH,
 			'domain'   => COOKIE_DOMAIN,

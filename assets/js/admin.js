@@ -40,7 +40,7 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     showAlert(debugTroubleshoot.alert_title_success, response.data.message);
                     isTroubleshooting = enableMode; // Update state
-                    $button.text(isTroubleshooting ? debugTroubleshoot.alert_title_success + ' Mode' : 'Enter Troubleshooting Mode');
+                    $button.text(isTroubleshooting ? 'Exit Troubleshooting Mode' : 'Enter Troubleshooting Mode');
                     if (isTroubleshooting) {
                         $button.removeClass('button-primary').addClass('button-danger');
                         $('#troubleshoot-mode-controls').removeClass('hidden');
@@ -77,7 +77,6 @@ jQuery(document).ready(function($) {
             var $checkbox = $(this);
             var pluginFile = $checkbox.val();
 
-            var originalActive = debugTroubleshoot.active_plugins.includes(pluginFile) || debugTroubleshoot.active_sitewide_plugins.includes(pluginFile);
             var troubleshootActive = false;
 
             if (troubleshootState && troubleshootState.plugins && troubleshootState.plugins.includes(pluginFile)) {
@@ -87,13 +86,7 @@ jQuery(document).ready(function($) {
                 troubleshootActive = true;
             }
 
-            // If troubleshooting is active, set checkbox based on troubleshootState
-            if (isTroubleshooting) {
-                $checkbox.prop('checked', troubleshootActive);
-            } else {
-                // If not in troubleshooting, reflect actual active plugins
-                $checkbox.prop('checked', originalActive);
-            }
+            $checkbox.prop('checked', troubleshootActive);
         });
     }
 
@@ -137,6 +130,110 @@ jQuery(document).ready(function($) {
             complete: function() {
                 $button.prop('disabled', false).text('Apply Troubleshooting Changes');
             }
+        });
+    });
+
+    // --- Collapsible Site Info Cards & Copy to Clipboard ---
+
+    // Collapsible Site Info Cards
+    $('.card-collapsible-header').on('click', function() {
+        var $header = $(this);
+        var $content = $header.siblings('.card-collapsible-content');
+        
+        $content.slideToggle(200);
+        $header.toggleClass('collapsed');
+    });
+
+    // Toggle for theme/plugin sub-lists
+    $('.info-sub-list-toggle').on('click', function(e) {
+        e.preventDefault();
+        var $link = $(this);
+        var targetId = $link.data('target');
+        var $list = $('#' + targetId);
+
+        $list.slideToggle(200);
+
+        if ($link.text() === debugTroubleshoot.show_all_text) {
+            $link.text(debugTroubleshoot.hide_text);
+        } else {
+            $link.text(debugTroubleshoot.show_all_text);
+        }
+    });
+
+    // Copy Site Info to Clipboard
+    $('#copy-site-info').on('click', function(e) {
+        e.stopPropagation(); // Prevent any other click events
+        var $button = $(this);
+        var siteInfoText = '';
+        var siteInfoContent = document.getElementById('site-info-content');
+
+        // Function to format and append a card's content
+        function appendCardInfo(card) {
+            var title = card.querySelector('h3').innerText;
+            var infoList = card.querySelectorAll('p, li, h4');
+            siteInfoText += '### ' + title + ' ###\n';
+            infoList.forEach(function(item) {
+				if (item.tagName.toLowerCase() === 'h4') {
+					siteInfoText += '\n--- ' + item.textContent.trim() + ' ---\n';
+				} else {
+					var key = item.querySelector('strong') ? item.querySelector('strong').textContent.trim() : '';
+					var itemClone = item.cloneNode(true);
+					if (itemClone.querySelector('strong')) {
+						itemClone.querySelector('strong').remove();
+					}
+					var value = itemClone.textContent.trim().replace(/\s+/g, ' ');
+					if (key) {
+						siteInfoText += key + ' ' + value + '\n';
+					} else {
+						siteInfoText += value + '\n';
+					}
+				}
+            });
+            siteInfoText += '\n';
+        }
+
+        // Iterate over each card and extract its information
+        siteInfoContent.querySelectorAll('.debug-troubleshooter-card').forEach(appendCardInfo);
+
+        // Use modern Clipboard API
+        navigator.clipboard.writeText(siteInfoText.trim()).then(function() {
+            var originalText = debugTroubleshoot.copy_button_text;
+            $button.text(debugTroubleshoot.copied_button_text);
+            setTimeout(function() {
+                $button.text(originalText);
+            }, 2000);
+        }).catch(function(err) {
+            // Fallback for older browsers
+            var textArea = document.createElement("textarea");
+            textArea.value = siteInfoText.trim();
+            textArea.style.position = "fixed";
+            textArea.style.top = 0;
+            textArea.style.left = 0;
+            textArea.style.width = "2em";
+            textArea.style.height = "2em";
+            textArea.style.padding = 0;
+            textArea.style.border = "none";
+            textArea.style.outline = "none";
+            textArea.style.boxShadow = "none";
+            textArea.style.background = "transparent";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                var successful = document.execCommand('copy');
+                if (successful) {
+                    var originalText = debugTroubleshoot.copy_button_text;
+                    $button.text(debugTroubleshoot.copied_button_text);
+                    setTimeout(function() {
+                        $button.text(originalText);
+                    }, 2000);
+                } else {
+                    showAlert(debugTroubleshoot.alert_title_error, 'Could not copy text.', 'error');
+                }
+            } catch (err) {
+                showAlert(debugTroubleshoot.alert_title_error, 'Could not copy text: ' + err, 'error');
+            }
+            document.body.removeChild(textArea);
         });
     });
 });

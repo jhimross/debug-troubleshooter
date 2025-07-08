@@ -130,3 +130,11 @@ A: It shows crucial details like your PHP version, memory limits, WordPress vers
 
 = 1.0.0 =
 Initial release. No upgrade notice needed.
+
+= 1.1.0 - 2025-07-08 =
+*Feature: Site Information cards (WordPress, PHP, Database, Server, Constants) are now collapsible and closed by default for a cleaner interface.
+*Feature: Added a "Copy to Clipboard" button to easily copy all site information for support requests or documentation.
+*Enhancement: The "WordPress Information" card now displays a detailed list of all installed themes and plugins, along with their respective active, inactive, or network-active status.
+*Enhancement: The theme and plugin lists within the "WordPress Information" card are now compact, showing counts by default with a "Show All" toggle to view the complete list without taking up too much space.
+*Enhancement: Expanded the displayed information for PHP, Server, and WordPress constants to provide more comprehensive data for debugging.
+*Fix: Resolved a bug that prevented the collapsible sections from functioning correctly after recent updates.

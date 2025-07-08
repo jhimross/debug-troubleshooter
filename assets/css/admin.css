@@ -25,7 +25,7 @@
 .bg-white { background-color: #fff; margin-left: auto; margin-right: auto; }
 .p-6 { padding: 1.5rem; }
 .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
-.hidden { display: none !important; } /* Important for JS toggling */
+.hidden { display: none; }
 
 /* Custom styles for the plugin UI */
 .debug-troubleshooter-wrap {
@@ -46,44 +46,172 @@
 	background: #fff;
 	border: 1px solid #c3c4c7;
 	box-shadow: 0 1px 1px rgba(0,0,0,.04);
-	padding: 20px;
+	padding: 0;
 	border-radius: 5px;
 }
-.debug-troubleshooter-section h2 {
-	margin-top: 0;
-	margin-bottom: 15px;
-	padding-bottom: 10px;
-	border-bottom: 1px solid #eee;
+.debug-troubleshooter-section.standalone-section {
+    padding: 20px;
 }
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #c3c4c7;
+}
+.section-header h2 {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    font-size: 1.3em;
+}
+.section-content {
+    padding: 20px;
+}
+.standalone-section .section-header {
+    padding: 0 0 15px 0;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 15px;
+}
+
+/* Site Info Grid Layout */
+.site-info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
 .debug-troubleshooter-card {
-	background: #fdfdfd;
+	background: #fff;
 	border: 1px solid #e0e0e0;
-	padding: 15px;
+	padding: 0;
 	border-radius: 4px;
 	margin-bottom: 15px;
 }
+.debug-troubleshooter-card:last-child {
+	margin-bottom: 0;
+}
 .debug-troubleshooter-card h3 {
-	margin-top: 0;
-	margin-bottom: 10px;
+	margin: 0;
 	font-size: 1.1em;
 	color: #2c3338;
 }
-.debug-troubleshooter-card p {
-	margin-bottom: 10px;
+.debug-troubleshooter-card h4 {
+    font-size: 1em;
+    font-weight: 600;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+}
+.debug-troubleshooter-card p,
+.debug-troubleshooter-card li {
+	margin-bottom: 8px;
+	padding: 5px 0;
+	border-bottom: 1px dashed #f0f0f0;
+	font-size: 13px;
 }
 .debug-troubleshooter-card ul {
 	margin: 0;
 	padding: 0;
 	list-style: none;
 }
-.debug-troubleshooter-card li {
-	margin-bottom: 5px;
-	padding: 5px 0;
-	border-bottom: 1px dashed #eee;
-}
 .debug-troubleshooter-card li:last-child {
 	border-bottom: none;
 }
+
+.info-sub-list {
+    list-style: none;
+    margin: 10px 0 15px 0;
+    padding: 0;
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #f0f0f0;
+    border-radius: 3px;
+    background: #fff;
+}
+
+.info-sub-list li {
+    padding: 8px 10px !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+    margin-bottom: 0 !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.info-sub-list li:last-child {
+    border-bottom: none !important;
+}
+
+.info-sub-list-toggle {
+    cursor: pointer;
+    font-size: 12px;
+    text-decoration: none;
+}
+.info-sub-list-toggle:hover {
+    text-decoration: underline;
+}
+
+.status-active, .status-network-active, .status-inactive {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.status-active {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-network-active {
+    background-color: #cff4fc;
+    color: #055160;
+}
+
+.status-inactive {
+    background-color: #f8d7da;
+    color: #58151c;
+}
+
+/* Card Collapsible Styles */
+.card-collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 15px;
+    background: #f9f9f9;
+}
+.debug-troubleshooter-card.collapsible .card-collapsible-header {
+	border-bottom: 1px solid #e0e0e0;
+}
+.card-collapsible-header:hover {
+    background: #f1f1f1;
+}
+.card-collapsible-header .dashicons {
+    transition: transform 0.2s ease-in-out;
+}
+.card-collapsible-header.collapsed .dashicons {
+    transform: rotate(-90deg);
+}
+.card-collapsible-content {
+    padding: 15px;
+}
+.card-collapsible-content.hidden {
+    display: none;
+}
+.debug-troubleshooter-card:not(.collapsible) {
+    padding: 15px;
+}
+.debug-troubleshooter-card:not(.collapsible) h3 {
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+}
+
 
 #troubleshoot-mode-controls {
 	margin-top: 20px;
