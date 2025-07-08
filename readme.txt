@@ -43,6 +43,55 @@ This plugin is an invaluable tool for developers, site administrators, and anyon
 2.  **Upload** the `debug-troubleshooter` folder (containing `debug-troubleshooter.php`, `assets/css/admin.css`, and `assets/js/admin.js`) to the `/wp-content/plugins/` directory via FTP or your hosting's file manager.
 3.  **Activate** the plugin through the 'Plugins' menu in WordPress.
 
+== Usage ==
+
+Once the plugin is installed and activated, navigate to **Tools > Debug & Troubleshooter** in your WordPress dashboard.
+
+### 1. Site Information
+
+The top section provides a quick overview of your WordPress environment:
+
+* **PHP Information:** Displays your PHP version and memory limit.
+* **WordPress Information:** Shows your WordPress version, active theme, and a list of currently active plugins.
+* **WordPress Constants:** Lists important WordPress configuration constants and their values.
+* **Server Information:** Provides basic details about your web server.
+
+This section is for informational purposes only and does not allow for direct modifications.
+
+### 2. Troubleshooting Mode
+
+This powerful feature allows you to simulate theme switches and plugin deactivations for your current browser session without affecting your live website for other visitors.
+
+**Entering Troubleshooting Mode:**
+
+1.  Locate the "Troubleshooting Mode" section.
+2.  Click the **"Enter Troubleshooting Mode"** button.
+3.  The page will reload, and a yellow admin notice will appear at the top of your dashboard, indicating that Troubleshooting Mode is active. This confirms that your session is now isolated.
+
+**Simulating Theme Switch:**
+
+1.  While in Troubleshooting Mode, use the **"Simulate Theme Switch"** dropdown.
+2.  Select any installed theme from the list. This theme will be active for your session only.
+
+**Simulating Plugin Deactivation:**
+
+1.  In the **"Simulate Plugin Deactivation"** section, you'll see a list of all your installed plugins.
+2.  By default, plugins currently active on your live site will be checked.
+3.  To simulate deactivating a plugin for your session, simply **uncheck** its box. Plugins that remain checked will be active in your troubleshooting session.
+
+**Applying Troubleshooting Changes:**
+
+1.  After making your desired selections for both theme and plugins, click the **"Apply Troubleshooting Changes"** button.
+2.  The page will reload, applying your simulated theme and plugin states to your current browser session.
+3.  You can now navigate to the front-end of your website to test for conflicts or issues with the new configuration.
+
+**Exiting Troubleshooting Mode:**
+
+1.  To end your troubleshooting session and revert your browser to seeing the live site's actual configuration, return to the **Tools > Debug & Troubleshooter** page.
+2.  Click the **"Exit Troubleshooting Mode"** button.
+3.  The page will reload, and the admin notice will disappear, confirming you have exited the mode.
+
+
 == Frequently Asked Questions ==
 
 **Q: How does Troubleshooting Mode work without affecting my live site?**

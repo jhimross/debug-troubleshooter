@@ -218,6 +218,15 @@ class Debug_Troubleshooter {
 		echo '<h3>' . esc_html__( 'PHP Information', 'debug-troubleshooter' ) . '</h3>';
 		echo '<p><strong>' . esc_html__( 'PHP Version:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( phpversion() ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'Memory Limit:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'memory_limit' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Post Max Size:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'post_max_size' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Upload Max Filesize:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'upload_max_filesize' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Max Execution Time:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'max_execution_time' ) ) . 's</p>';
+		echo '<p><strong>' . esc_html__( 'Max Input Time:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'max_input_time' ) ) . 's</p>';
+		echo '<p><strong>' . esc_html__( 'Default Charset:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'default_charset' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Display Errors:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'display_errors' ) ? 'On' : 'Off' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Log Errors:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'log_errors' ) ? 'On' : 'Off' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Error Log File:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'error_log' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Open BaseDir:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'open_basedir' ) ? ini_get( 'open_basedir' ) : 'Not Set' ) . '</p>';
 		echo '</div>';
 
 		echo '<div class="debug-troubleshooter-card">';
