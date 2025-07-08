@@ -111,9 +111,15 @@ A: It shows crucial details like your PHP version, memory limits, WordPress vers
 
 == Screenshots ==
 
-1.  Screenshot 1: The main Debug & Troubleshooter dashboard showing Site Information.
-2.  Screenshot 2: The Troubleshooting Mode section with theme and plugin selection.
+1.  The main Debug & Troubleshooter dashboard showing Site Information.
+![screenshot-1](https://github.com/user-attachments/assets/fb8beb25-06f9-4c5d-b19c-094520c95670)
+  
+2. The Troubleshooting Mode section with theme and plugin selection.
+![screenshot-2](https://github.com/user-attachments/assets/f14e61ee-837b-46ff-ae1f-ffadbba2344b)
+
 3.  Screenshot 3: An example of the admin notice when Troubleshooting Mode is active.
+![screenshot-3](https://github.com/user-attachments/assets/c64e2e99-8b3b-4d5c-8ee0-3881b74361a1)
+
 
 == Changelog ==
 
