@@ -1,12 +1,19 @@
-** Debugger & Troubleshooter **
-
+=== Debugger & Troubleshooter ===
+Contributors: jhimross
+Tags: debug, troubleshoot, site health, php info, theme
+Requires at least: 5.0
+Requires PHP: 7.4
+Tested up to: 6.8
+Stable tag: 1.0.0
+License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+Donate link: https://paypal.me/jhimross28
 
 A WordPress plugin for debugging & troubleshooting. Safely simulate plugin deactivation and theme switching for your session only.
 
 == Description ==
 
-The "Debugger & Troubleshooter" plugin provides essential tools for WordPress site administrators to diagnose and resolve issues efficiently. It offers a dedicated section in the WordPress dashboard that displays comprehensive site health information, similar to the built-in Site Health feature, including PHP version, memory limit, WordPress constants, and active theme/plugin details.
+The "Debug & Troubleshooter" plugin provides essential tools for WordPress site administrators to diagnose and resolve issues efficiently. It offers a dedicated section in the WordPress dashboard that displays comprehensive site health information, similar to the built-in Site Health feature, including PHP version, memory limit, WordPress constants, and active theme/plugin details.
 
 **Key Features:**
 
@@ -20,7 +27,7 @@ The "Debugger & Troubleshooter" plugin provides essential tools for WordPress si
 
 This plugin is an invaluable tool for developers, site administrators, and anyone who needs to debug WordPress issues without risking site downtime or affecting user experience.
 
-Installation
+== Installation ==
 
 1.  **Download** the plugin ZIP file.
 2.  **Upload** the plugin to your WordPress site:
@@ -35,6 +42,55 @@ Installation
 1.  **Extract** the `debug-troubleshooter.zip` file.
 2.  **Upload** the `debug-troubleshooter` folder (containing `debug-troubleshooter.php`, `assets/css/admin.css`, and `assets/js/admin.js`) to the `/wp-content/plugins/` directory via FTP or your hosting's file manager.
 3.  **Activate** the plugin through the 'Plugins' menu in WordPress.
+
+== Usage ==
+
+Once the plugin is installed and activated, navigate to **Tools > Debug & Troubleshooter** in your WordPress dashboard.
+
+### 1. Site Information
+
+The top section provides a quick overview of your WordPress environment:
+
+* **PHP Information:** Displays your PHP version and memory limit.
+* **WordPress Information:** Shows your WordPress version, active theme, and a list of currently active plugins.
+* **WordPress Constants:** Lists important WordPress configuration constants and their values.
+* **Server Information:** Provides basic details about your web server.
+
+This section is for informational purposes only and does not allow for direct modifications.
+
+### 2. Troubleshooting Mode
+
+This powerful feature allows you to simulate theme switches and plugin deactivations for your current browser session without affecting your live website for other visitors.
+
+**Entering Troubleshooting Mode:**
+
+1.  Locate the "Troubleshooting Mode" section.
+2.  Click the **"Enter Troubleshooting Mode"** button.
+3.  The page will reload, and a yellow admin notice will appear at the top of your dashboard, indicating that Troubleshooting Mode is active. This confirms that your session is now isolated.
+
+**Simulating Theme Switch:**
+
+1.  While in Troubleshooting Mode, use the **"Simulate Theme Switch"** dropdown.
+2.  Select any installed theme from the list. This theme will be active for your session only.
+
+**Simulating Plugin Deactivation:**
+
+1.  In the **"Simulate Plugin Deactivation"** section, you'll see a list of all your installed plugins.
+2.  By default, plugins currently active on your live site will be checked.
+3.  To simulate deactivating a plugin for your session, simply **uncheck** its box. Plugins that remain checked will be active in your troubleshooting session.
+
+**Applying Troubleshooting Changes:**
+
+1.  After making your desired selections for both theme and plugins, click the **"Apply Troubleshooting Changes"** button.
+2.  The page will reload, applying your simulated theme and plugin states to your current browser session.
+3.  You can now navigate to the front-end of your website to test for conflicts or issues with the new configuration.
+
+**Exiting Troubleshooting Mode:**
+
+1.  To end your troubleshooting session and revert your browser to seeing the live site's actual configuration, return to the **Tools > Debug & Troubleshooter** page.
+2.  Click the **"Exit Troubleshooting Mode"** button.
+3.  The page will reload, and the admin notice will disappear, confirming you have exited the mode.
+
 
 == Frequently Asked Questions ==
 
@@ -55,18 +111,13 @@ A: It shows crucial details like your PHP version, memory limits, WordPress vers
 
 == Screenshots ==
 
-1. The main Debug & Troubleshooter dashboard showing Site Information.
-![screenshot-1](https://github.com/user-attachments/assets/634546ea-f772-4100-b1c4-165366b05180)
-
-2. The Troubleshooting Mode section with theme and plugin selection.
-![screenshot-2](https://github.com/user-attachments/assets/d4de9b08-cc9f-438f-910e-bb0d440938c2)
-
-3. An example of the admin notice when Troubleshooting Mode is active.
-![screenshot-3](https://github.com/user-attachments/assets/2c34eabe-189a-4504-956f-51f3746ab6fa)
+1.  Screenshot 1: The main Debug & Troubleshooter dashboard showing Site Information.
+2.  Screenshot 2: The Troubleshooting Mode section with theme and plugin selection.
+3.  Screenshot 3: An example of the admin notice when Troubleshooting Mode is active.
 
 == Changelog ==
 
-= 1.0.0 - 2025-06-25 =
+= 1.0.0 – 2025-06-25 =
 * Initial release.
 * Added comprehensive Site Information display (PHP, WP, Constants, Server).
 * Implemented session-based Troubleshooting Mode for simulated theme switching.
@@ -79,6 +130,3 @@ A: It shows crucial details like your PHP version, memory limits, WordPress vers
 
 = 1.0.0 =
 Initial release. No upgrade notice needed.
-
-
-
