@@ -3,9 +3,9 @@
  * Plugin Name:       Debugger & Troubleshooter
  * Plugin URI:        https://wordpress.org/plugins/debugger-troubleshooter
  * Description:       A WordPress plugin for debugging and troubleshooting, allowing simulated plugin deactivation and theme switching without affecting the live site.
- * Version:           1.1.0
+ * Version:           1.2.1
  * Author:            Jhimross
- * Author URI:        https://jhimross.com
+ * Author URI:        https://profiles.wordpress.org/jhimross
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       debug-troubleshooter
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Define plugin constants.
  */
-define( 'DBGTBL_VERSION', '1.1.0' );
+define( 'DBGTBL_VERSION', '1.2.1' );
 define( 'DBGTBL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DBGTBL_URL', plugin_dir_url( __FILE__ ) );
 define( 'DBGTBL_BASENAME', plugin_basename( __FILE__ ) );
@@ -35,6 +35,7 @@ class Debug_Troubleshooter {
 	 * Troubleshooting mode cookie name.
 	 */
 	const TROUBLESHOOT_COOKIE = 'wp_debug_troubleshoot_mode';
+	const DEBUG_MODE_OPTION   = 'wp_debug_troubleshoot_debug_mode';
 
 	/**
 	 * Stores the current troubleshooting state from the cookie.
@@ -55,9 +56,12 @@ class Debug_Troubleshooter {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
 		add_action( 'wp_ajax_debug_troubleshoot_toggle_mode', array( $this, 'ajax_toggle_troubleshoot_mode' ) );
 		add_action( 'wp_ajax_debug_troubleshoot_update_state', array( $this, 'ajax_update_troubleshoot_state' ) );
+		add_action( 'wp_ajax_debug_troubleshoot_toggle_debug_mode', array( $this, 'ajax_toggle_debug_mode' ) );
+		add_action( 'wp_ajax_debug_troubleshoot_clear_debug_log', array( $this, 'ajax_clear_debug_log' ) );
 
 		// Core troubleshooting logic (very early hook).
 		add_action( 'plugins_loaded', array( $this, 'init_troubleshooting_mode' ), 0 );
+		add_action( 'plugins_loaded', array( $this, 'init_live_debug_mode' ), 0 );
 
 		// Admin notice for troubleshooting mode.
 		add_action( 'admin_notices', array( $this, 'troubleshooting_mode_notice' ) );
@@ -107,6 +111,7 @@ class Debug_Troubleshooter {
 				'nonce'               => wp_create_nonce( 'debug_troubleshoot_nonce' ),
 				'is_troubleshooting'  => $this->is_troubleshooting_active(),
 				'current_state'       => $this->get_troubleshoot_state(),
+				'is_debug_mode'       => get_option( self::DEBUG_MODE_OPTION, 'disabled' ) === 'enabled',
 				'active_plugins'      => get_option( 'active_plugins', array() ),
 				'active_sitewide_plugins' => is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', array() ) ) : array(),
 				'current_theme'       => get_stylesheet(),
@@ -124,6 +129,7 @@ class Debug_Troubleshooter {
 	 * Renders the admin page content.
 	 */
 	public function render_admin_page() {
+		$is_debug_mode_enabled = get_option( self::DEBUG_MODE_OPTION, 'disabled' ) === 'enabled';
 		?>
 		<div class="wrap debug-troubleshooter-wrap">
 			<h1 class="wp-heading-inline"><?php esc_html_e( 'Debugger & Troubleshooter', 'debug-troubleshooter' ); ?></h1>
@@ -207,6 +213,29 @@ class Debug_Troubleshooter {
 						</div><!-- #troubleshoot-mode-controls -->
 					</div>
 				</div>
+
+				<div class="debug-troubleshooter-section standalone-section full-width-section">
+					<div class="section-header">
+						<h2><?php esc_html_e( 'Live Debugging', 'debug-troubleshooter' ); ?></h2>
+						<button id="debug-mode-toggle" class="button button-large <?php echo $is_debug_mode_enabled ? 'button-danger' : 'button-primary'; ?>">
+							<?php echo $is_debug_mode_enabled ? esc_html__( 'Disable Live Debug', 'debug-troubleshooter' ) : esc_html__( 'Enable Live Debug', 'debug-troubleshooter' ); ?>
+						</button>
+					</div>
+					<div class="section-content">
+						<p class="description">
+							<?php esc_html_e( 'Enable this to turn on WP_DEBUG without editing your wp-config.php file. Errors will be logged to the debug.log file below, not displayed on the site.', 'debug-troubleshooter' ); ?>
+						</p>
+
+						<div class="debug-log-viewer-wrapper">
+							<div class="debug-log-header">
+								<h3><?php esc_html_e( 'Debug Log Viewer', 'debug-troubleshooter' ); ?></h3>
+								<button id="clear-debug-log" class="button button-secondary"><?php esc_html_e( 'Clear Log', 'debug-troubleshooter' ); ?></button>
+							</div>
+							<textarea id="debug-log-viewer" readonly class="large-text" rows="15"><?php echo esc_textarea( $this->get_debug_log_content() ); ?></textarea>
+						</div>
+					</div>
+				</div>
+
 			</div>
 		</div>
 
@@ -215,6 +244,17 @@ class Debug_Troubleshooter {
 				<h3 id="debug-troubleshoot-alert-title" class="text-xl font-bold mb-4"></h3>
 				<p id="debug-troubleshoot-alert-message" class="text-gray-700 mb-6"></p>
 				<button id="debug-troubleshoot-alert-close" class="button button-primary"><?php esc_html_e( 'OK', 'debug-troubleshooter' ); ?></button>
+			</div>
+		</div>
+
+		<div id="debug-troubleshoot-confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+			<div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+				<h3 id="debug-troubleshoot-confirm-title" class="text-xl font-bold mb-4"></h3>
+				<p id="debug-troubleshoot-confirm-message" class="text-gray-700 mb-6"></p>
+				<div class="confirm-buttons">
+					<button id="debug-troubleshoot-confirm-cancel" class="button button-secondary"><?php esc_html_e( 'Cancel', 'debug-troubleshooter' ); ?></button>
+					<button id="debug-troubleshoot-confirm-ok" class="button button-danger"><?php esc_html_e( 'Confirm', 'debug-troubleshooter' ); ?></button>
+				</div>
 			</div>
 		</div>
 
@@ -252,7 +292,7 @@ class Debug_Troubleshooter {
 			echo '<ul id="themes-list" class="info-sub-list hidden">';
 			foreach ( $all_themes as $stylesheet => $theme ) {
 				$status = ( $stylesheet === $active_theme_obj->get_stylesheet() ) ? '<span class="status-active">Active</span>' : '<span class="status-inactive">Inactive</span>';
-				echo '<li><div>' . esc_html( $theme->get( 'Name' ) ) . ' (' . esc_html( $theme->get( 'Version' ) ) . ')</div>' . $status . '</li>';
+				echo '<li><div>' . esc_html( $theme->get( 'Name' ) ) . ' (' . esc_html( $theme->get( 'Version' ) ) . ')</div>' . wp_kses_post( $status ) . '</li>';
 			}
 			echo '</ul>';
 		}
@@ -279,7 +319,7 @@ class Debug_Troubleshooter {
 				} elseif ( in_array( $plugin_file, $network_active_plugins, true ) ) {
 					$status = '<span class="status-network-active">Network Active</span>';
 				}
-				echo '<li><div>' . esc_html( $plugin_data['Name'] ) . ' (' . esc_html( $plugin_data['Version'] ) . ')</div>' . $status . '</li>';
+				echo '<li><div>' . esc_html( $plugin_data['Name'] ) . ' (' . esc_html( $plugin_data['Version'] ) . ')</div>' . wp_kses_post( $status ) . '</li>';
 			}
 			echo '</ul>';
 		}
@@ -292,7 +332,7 @@ class Debug_Troubleshooter {
 		echo '<div class="card-collapsible-content hidden">';
 		echo '<p><strong>' . esc_html__( 'PHP Version:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( phpversion() ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'Memory Limit:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'memory_limit' ) ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Peak Memory Usage:', 'debug-troubleshooter' ) . '</strong> ' . size_format( memory_get_peak_usage( true ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Peak Memory Usage:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( size_format( memory_get_peak_usage( true ) ) ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'Post Max Size:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'post_max_size' ) ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'Upload Max Filesize:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'upload_max_filesize' ) ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'Max Execution Time:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'max_execution_time' ) ) . 's</p>';
@@ -307,7 +347,10 @@ class Debug_Troubleshooter {
 		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'Database Information', 'debug-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
 		echo '<div class="card-collapsible-content hidden">';
 		echo '<p><strong>' . esc_html__( 'Database Engine:', 'debug-troubleshooter' ) . '</strong> MySQL</p>';
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// Direct query is necessary to get the MySQL server version. Caching is not beneficial for this one-off diagnostic read.
 		echo '<p><strong>' . esc_html__( 'MySQL Version:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( $wpdb->get_var( 'SELECT VERSION()' ) ) . '</p>';
+		// phpcs:enable
 		echo '<p><strong>' . esc_html__( 'DB Name:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( DB_NAME ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'DB Host:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( DB_HOST ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'DB Charset:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( DB_CHARSET ) . '</p>';
@@ -384,6 +427,13 @@ class Debug_Troubleshooter {
 			$this->troubleshoot_state = json_decode( wp_unslash( $_COOKIE[ self::TROUBLESHOOT_COOKIE ] ), true );
 
 			if ( ! empty( $this->troubleshoot_state ) ) {
+				// Define DONOTCACHEPAGE to prevent caching plugins from interfering.
+				if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+					define( 'DONOTCACHEPAGE', true );
+				}
+				// Send no-cache headers as a secondary measure.
+				nocache_headers();
+
 				// Filter active plugins.
 				add_filter( 'option_active_plugins', array( $this, 'filter_active_plugins' ) );
 				if ( is_multisite() ) {
@@ -394,6 +444,26 @@ class Debug_Troubleshooter {
 				add_filter( 'pre_option_template', array( $this, 'filter_theme' ) );
 				add_filter( 'pre_option_stylesheet', array( $this, 'filter_theme' ) );
 			}
+		}
+	}
+
+	/**
+	 * Initializes the live debug mode.
+	 */
+	public function init_live_debug_mode() {
+		if ( get_option( self::DEBUG_MODE_OPTION, 'disabled' ) === 'enabled' ) {
+			if ( ! defined( 'WP_DEBUG' ) ) {
+				define( 'WP_DEBUG', true );
+			}
+			if ( ! defined( 'WP_DEBUG_LOG' ) ) {
+				define( 'WP_DEBUG_LOG', true );
+			}
+			if ( ! defined( 'WP_DEBUG_DISPLAY' ) ) {
+				define( 'WP_DEBUG_DISPLAY', false );
+			}
+			// This is necessary for the feature to function as intended.
+			// phpcs:ignore WordPress.PHP.IniSet.display_errors_Disallowed, Squiz.PHP.DiscouragedFunctions.Discouraged
+			@ini_set( 'display_errors', 0 );
 		}
 	}
 
@@ -414,6 +484,86 @@ class Debug_Troubleshooter {
 	public function get_troubleshoot_state() {
 		return $this->troubleshoot_state;
 	}
+
+	/**
+	 * Gets the content of the debug.log file (last N lines).
+	 *
+	 * @param int $lines_count The number of lines to retrieve from the end of the file.
+	 * @return string
+	 */
+	private function get_debug_log_content( $lines_count = 200 ) {
+		$log_file = WP_CONTENT_DIR . '/debug.log';
+
+		if ( ! file_exists( $log_file ) || ! is_readable( $log_file ) ) {
+			return __( 'debug.log file does not exist or is not readable.', 'debug-troubleshooter' );
+		}
+
+		if ( 0 === filesize( $log_file ) ) {
+			return __( 'debug.log is empty.', 'debug-troubleshooter' );
+		}
+
+		// More efficient way to read last N lines of a large file.
+		$file = new SplFileObject( $log_file, 'r' );
+		$file->seek( PHP_INT_MAX );
+		$last_line = $file->key();
+		$lines     = new LimitIterator( $file, max( 0, $last_line - $lines_count ), $last_line );
+
+		return implode( '', iterator_to_array( $lines ) );
+	}
+
+	/**
+	 * AJAX handler to toggle Live Debug mode.
+	 */
+	public function ajax_toggle_debug_mode() {
+		check_ajax_referer( 'debug_troubleshoot_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'debug-troubleshooter' ) ) );
+		}
+
+		$current_status = get_option( self::DEBUG_MODE_OPTION, 'disabled' );
+		$new_status     = ( 'enabled' === $current_status ) ? 'disabled' : 'enabled';
+		update_option( self::DEBUG_MODE_OPTION, $new_status );
+
+		if ( 'enabled' === $new_status ) {
+			wp_send_json_success( array( 'message' => __( 'Live Debug mode enabled.', 'debug-troubleshooter' ) ) );
+		} else {
+			wp_send_json_success( array( 'message' => __( 'Live Debug mode disabled.', 'debug-troubleshooter' ) ) );
+		}
+	}
+
+	/**
+	 * AJAX handler to clear the debug log.
+	 */
+	public function ajax_clear_debug_log() {
+		check_ajax_referer( 'debug_troubleshoot_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'debug-troubleshooter' ) ) );
+		}
+
+		global $wp_filesystem;
+		if ( ! $wp_filesystem ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			WP_Filesystem();
+		}
+
+		$log_file = WP_CONTENT_DIR . '/debug.log';
+
+		if ( $wp_filesystem->exists( $log_file ) ) {
+			if ( ! $wp_filesystem->is_writable( $log_file ) ) {
+				wp_send_json_error( array( 'message' => __( 'Debug log is not writable.', 'debug-troubleshooter' ) ) );
+			}
+			if ( $wp_filesystem->put_contents( $log_file, '' ) ) {
+				wp_send_json_success( array( 'message' => __( 'Debug log cleared successfully.', 'debug-troubleshooter' ) ) );
+			} else {
+				wp_send_json_error( array( 'message' => __( 'Could not clear the debug log.', 'debug-troubleshooter' ) ) );
+			}
+		} else {
+			wp_send_json_success( array( 'message' => __( 'Debug log does not exist.', 'debug-troubleshooter' ) ) );
+		}
+	}
+
 
 	/**
 	 * Filters active plugins based on troubleshooting state.
@@ -571,7 +721,7 @@ class Debug_Troubleshooter {
 				<p>
 					<strong><?php esc_html_e( 'Troubleshooting Mode is Active!', 'debug-troubleshooter' ); ?></strong>
 					<?php esc_html_e( 'You are currently in a special troubleshooting session. Your simulated theme and plugin states are not affecting the live site for other visitors.', 'debug-troubleshooter' ); ?>
-					<a href="<?php echo esc_url( $troubleshoot_url ); ?>"><?php esc_html_e( 'Go to Debug & Troubleshooter page to manage.', 'debug-troubleshooter' ); ?></a>
+					<a href="<?php echo esc_url( $troubleshoot_url ); ?>"><?php esc_html_e( 'Go to Debugger & Troubleshooter page to manage.', 'debug-troubleshooter' ); ?></a>
 				</p>
 			</div>
 			<?php

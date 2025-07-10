@@ -41,6 +41,9 @@
 	.debug-troubleshooter-content {
 		grid-template-columns: 1fr 1fr;
 	}
+	.full-width-section {
+		grid-column: 1 / -1;
+	}
 }
 .debug-troubleshooter-section {
 	background: #fff;
@@ -258,4 +261,41 @@
 }
 .debug-troubleshoot-notice {
     border-left-color: #fbc02d !important; /* Yellow for warning */
+}
+
+/* Debug Log Viewer */
+.debug-log-viewer-wrapper {
+	margin-top: 20px;
+}
+.debug-log-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 10px;
+}
+.debug-log-header h3 {
+	margin: 0;
+	font-size: 1.2em;
+}
+#debug-log-viewer {
+	width: 100%;
+	background-color: #282c34;
+	color: #abb2bf;
+	font-family: monospace;
+	font-size: 13px;
+	line-height: 1.5;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	padding: 10px;
+	white-space: pre;
+	overflow-wrap: normal;
+	overflow-x: auto;
+}
+
+/* Confirmation Modal */
+.confirm-buttons {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
 }

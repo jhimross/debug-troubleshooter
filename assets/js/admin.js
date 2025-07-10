@@ -1,6 +1,9 @@
 jQuery(document).ready(function($) {
     var isTroubleshooting = debugTroubleshoot.is_troubleshooting;
     var troubleshootState = debugTroubleshoot.current_state;
+    var isDebugMode = debugTroubleshoot.is_debug_mode;
+
+    // --- MODALS ---
 
     // Show custom alert modal
     function showAlert(title, message, type = 'success') {
@@ -17,9 +20,18 @@ jQuery(document).ready(function($) {
         modal.removeClass('hidden');
     }
 
+    // Close alert modal
     $('#debug-troubleshoot-alert-close').on('click', function() {
         $('#debug-troubleshoot-alert-modal').addClass('hidden');
     });
+
+    // Close confirmation modal
+    $('#debug-troubleshoot-confirm-cancel').on('click', function() {
+        $('#debug-troubleshoot-confirm-modal').addClass('hidden');
+    });
+
+
+    // --- EVENT HANDLERS ---
 
     // Handle toggle button for troubleshooting mode
     $('#troubleshoot-mode-toggle').on('click', function() {
@@ -40,16 +52,44 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     showAlert(debugTroubleshoot.alert_title_success, response.data.message);
                     isTroubleshooting = enableMode; // Update state
-                    $button.text(isTroubleshooting ? 'Exit Troubleshooting Mode' : 'Enter Troubleshooting Mode');
-                    if (isTroubleshooting) {
-                        $button.removeClass('button-primary').addClass('button-danger');
-                        $('#troubleshoot-mode-controls').removeClass('hidden');
-                    } else {
-                        $button.removeClass('button-danger').addClass('button-primary');
-                        $('#troubleshoot-mode-controls').addClass('hidden');
-                    }
                     // Refresh the page to apply cookie changes immediately
                     setTimeout(function() { location.reload(); }, 500);
+                } else {
+                    showAlert(debugTroubleshoot.alert_title_error, response.data.message, 'error');
+                    $button.prop('disabled', false);
+                }
+            },
+            error: function() {
+                showAlert(debugTroubleshoot.alert_title_error, 'An AJAX error occurred.', 'error');
+                $button.prop('disabled', false);
+            }
+        });
+    });
+
+    // Handle toggle button for Live Debug mode
+    $('#debug-mode-toggle').on('click', function() {
+        var $button = $(this);
+        var enableMode = !isDebugMode;
+
+        $button.prop('disabled', true).text(enableMode ? 'Enabling...' : 'Disabling...');
+
+        $.ajax({
+            url: debugTroubleshoot.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'debug_troubleshoot_toggle_debug_mode',
+                nonce: debugTroubleshoot.nonce,
+            },
+            success: function(response) {
+                if (response.success) {
+                    showAlert(debugTroubleshoot.alert_title_success, response.data.message);
+                    isDebugMode = enableMode; // Update state
+                    $button.text(isDebugMode ? 'Disable Live Debug' : 'Enable Live Debug');
+                    if (isDebugMode) {
+                        $button.removeClass('button-primary').addClass('button-danger');
+                    } else {
+                        $button.removeClass('button-danger').addClass('button-primary');
+                    }
                 } else {
                     showAlert(debugTroubleshoot.alert_title_error, response.data.message, 'error');
                 }
@@ -62,6 +102,45 @@ jQuery(document).ready(function($) {
             }
         });
     });
+
+    // Handle Clear Log button - Show confirmation modal
+    $('#clear-debug-log').on('click', function() {
+        var modal = $('#debug-troubleshoot-confirm-modal');
+        $('#debug-troubleshoot-confirm-title').text('Confirm Action');
+        $('#debug-troubleshoot-confirm-message').text('Are you sure you want to clear the debug.log file? This action cannot be undone.');
+        modal.removeClass('hidden');
+    });
+    
+    // Handle the actual log clearing after confirmation
+    $('#debug-troubleshoot-confirm-ok').on('click', function() {
+        var $button = $('#clear-debug-log');
+        $button.prop('disabled', true);
+        $('#debug-troubleshoot-confirm-modal').addClass('hidden');
+
+        $.ajax({
+            url: debugTroubleshoot.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'debug_troubleshoot_clear_debug_log',
+                nonce: debugTroubleshoot.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#debug-log-viewer').val('Debug log cleared successfully.');
+                    showAlert(debugTroubleshoot.alert_title_success, response.data.message);
+                } else {
+                    showAlert(debugTroubleshoot.alert_title_error, response.data.message, 'error');
+                }
+            },
+            error: function() {
+                showAlert(debugTroubleshoot.alert_title_error, 'An AJAX error occurred.', 'error');
+            },
+            complete: function() {
+                $button.prop('disabled', false);
+            }
+        });
+    });
+
 
     // Populate troubleshooting controls initially if mode is active
     if (isTroubleshooting) {
@@ -133,7 +212,7 @@ jQuery(document).ready(function($) {
         });
     });
 
-    // --- Collapsible Site Info Cards & Copy to Clipboard ---
+    // --- UI Toggles ---
 
     // Collapsible Site Info Cards
     $('.card-collapsible-header').on('click', function() {
