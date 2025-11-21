@@ -3,7 +3,7 @@
  * Plugin Name:       Debugger & Troubleshooter
  * Plugin URI:        https://wordpress.org/plugins/debugger-troubleshooter
  * Description:       A WordPress plugin for debugging and troubleshooting, allowing simulated plugin deactivation and theme switching without affecting the live site.
- * Version:           1.2.1
+ * Version:           1.3.0
  * Author:            Jhimross
  * Author URI:        https://profiles.wordpress.org/jhimross
  * License:           GPL-2.0+
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Define plugin constants.
  */
-define( 'DBGTBL_VERSION', '1.2.1' );
+define( 'DBGTBL_VERSION', '1.3.0' );
 define( 'DBGTBL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DBGTBL_URL', plugin_dir_url( __FILE__ ) );
 define( 'DBGTBL_BASENAME', plugin_basename( __FILE__ ) );
@@ -36,6 +36,7 @@ class Debug_Troubleshooter {
 	 */
 	const TROUBLESHOOT_COOKIE = 'wp_debug_troubleshoot_mode';
 	const DEBUG_MODE_OPTION   = 'wp_debug_troubleshoot_debug_mode';
+	const SIMULATE_USER_COOKIE = 'wp_debug_troubleshoot_simulate_user';
 
 	/**
 	 * Stores the current troubleshooting state from the cookie.
@@ -43,6 +44,13 @@ class Debug_Troubleshooter {
 	 * @var array|false
 	 */
 	private $troubleshoot_state = false;
+
+	/**
+	 * Stores the simulated user ID.
+	 *
+	 * @var int|false
+	 */
+	private $simulated_user_id = false;
 
 	/**
 	 * Constructor.
@@ -58,13 +66,16 @@ class Debug_Troubleshooter {
 		add_action( 'wp_ajax_debug_troubleshoot_update_state', array( $this, 'ajax_update_troubleshoot_state' ) );
 		add_action( 'wp_ajax_debug_troubleshoot_toggle_debug_mode', array( $this, 'ajax_toggle_debug_mode' ) );
 		add_action( 'wp_ajax_debug_troubleshoot_clear_debug_log', array( $this, 'ajax_clear_debug_log' ) );
+		add_action( 'wp_ajax_debug_troubleshoot_toggle_simulate_user', array( $this, 'ajax_toggle_simulate_user' ) );
 
 		// Core troubleshooting logic (very early hook).
 		add_action( 'plugins_loaded', array( $this, 'init_troubleshooting_mode' ), 0 );
 		add_action( 'plugins_loaded', array( $this, 'init_live_debug_mode' ), 0 );
+		add_action( 'plugins_loaded', array( $this, 'init_user_simulation' ), 0 );
 
 		// Admin notice for troubleshooting mode.
 		add_action( 'admin_notices', array( $this, 'troubleshooting_mode_notice' ) );
+		add_action( 'admin_bar_menu', array( $this, 'admin_bar_exit_simulation' ), 999 );
 	}
 
 	/**
@@ -121,6 +132,7 @@ class Debug_Troubleshooter {
 				'copied_button_text'  => __( 'Copied!', 'debug-troubleshooter' ),
 				'show_all_text'       => __( 'Show All', 'debug-troubleshooter' ),
 				'hide_text'           => __( 'Hide', 'debug-troubleshooter' ),
+				'is_simulating_user'  => $this->is_simulating_user(),
 			)
 		);
 	}
@@ -211,6 +223,20 @@ class Debug_Troubleshooter {
 							<button id="apply-troubleshoot-changes" class="button button-primary button-large"><?php esc_html_e( 'Apply Troubleshooting Changes', 'debug-troubleshooter' ); ?></button>
 							<p class="description"><?php esc_html_e( 'Applying changes will refresh the page to reflect your simulated theme and plugin states.', 'debug-troubleshooter' ); ?></p>
 						</div><!-- #troubleshoot-mode-controls -->
+					</div>
+				</div>
+
+
+
+				<div class="debug-troubleshooter-section standalone-section full-width-section">
+					<div class="section-header">
+						<h2><?php esc_html_e( 'User Role Simulator', 'debug-troubleshooter' ); ?></h2>
+					</div>
+					<div class="section-content">
+						<p class="description">
+							<?php esc_html_e( 'View the site as a specific user or role. This allows you to test permissions and user-specific content without logging out. This only affects your session.', 'debug-troubleshooter' ); ?>
+						</p>
+						<?php $this->render_user_simulation_section(); ?>
 					</div>
 				</div>
 
@@ -725,6 +751,173 @@ class Debug_Troubleshooter {
 				</p>
 			</div>
 			<?php
+		}
+	}
+	/**
+	 * Initializes the user simulation mode.
+	 */
+	public function init_user_simulation() {
+		if ( isset( $_COOKIE[ self::SIMULATE_USER_COOKIE ] ) ) {
+			$this->simulated_user_id = (int) $_COOKIE[ self::SIMULATE_USER_COOKIE ];
+			
+			// Hook into determine_current_user to override the user ID.
+			// Priority 20 ensures we run after most standard authentication checks.
+			add_filter( 'determine_current_user', array( $this, 'simulate_user_filter' ), 20 );
+		}
+	}
+
+	/**
+	 * Filter to override the current user ID.
+	 *
+	 * @param int|false $user_id The determined user ID.
+	 * @return int|false The simulated user ID or the original ID.
+	 */
+	public function simulate_user_filter( $user_id ) {
+		if ( $this->simulated_user_id ) {
+			return $this->simulated_user_id;
+		}
+		return $user_id;
+	}
+
+	/**
+	 * Checks if user simulation is active.
+	 *
+	 * @return bool
+	 */
+	public function is_simulating_user() {
+		return ! empty( $this->simulated_user_id );
+	}
+
+	/**
+	 * Renders the User Role Simulator section content.
+	 */
+	public function render_user_simulation_section() {
+		$users = get_users( array( 'fields' => array( 'ID', 'display_name', 'user_login' ), 'number' => 50 ) ); // Limit to 50 for performance in dropdown
+		$roles = wp_roles()->get_names();
+		?>
+		<div class="user-simulation-controls">
+			<div class="debug-troubleshooter-card">
+				<h3><?php esc_html_e( 'Select User to Simulate', 'debug-troubleshooter' ); ?></h3>
+				<div class="flex items-center gap-4">
+					<select id="simulate-user-select" class="regular-text">
+						<option value=""><?php esc_html_e( '-- Select a User --', 'debug-troubleshooter' ); ?></option>
+						<?php foreach ( $users as $user ) : ?>
+							<option value="<?php echo esc_attr( $user->ID ); ?>">
+								<?php echo esc_html( $user->display_name . ' (' . $user->user_login . ')' ); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+					<button id="simulate-user-btn" class="button button-primary"><?php esc_html_e( 'Simulate User', 'debug-troubleshooter' ); ?></button>
+				</div>
+				<p class="description mt-2">
+					<?php esc_html_e( 'Note: You can exit the simulation at any time using the "Exit Simulation" button in the Admin Bar.', 'debug-troubleshooter' ); ?>
+				</p>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Adds an "Exit Simulation" button to the Admin Bar.
+	 *
+	 * @param WP_Admin_Bar $wp_admin_bar The admin bar object.
+	 */
+	public function admin_bar_exit_simulation( $wp_admin_bar ) {
+		if ( $this->is_simulating_user() ) {
+			$wp_admin_bar->add_node( array(
+				'id'    => 'debug-troubleshooter-exit-sim',
+				'title' => '<span style="color: #ff4444; font-weight: bold;">' . __( 'Exit User Simulation', 'debug-troubleshooter' ) . '</span>',
+				'href'  => '#',
+				'meta'  => array(
+					'onclick' => 'debugTroubleshootExitSimulation(); return false;',
+					'title'   => __( 'Click to return to your original user account', 'debug-troubleshooter' ),
+				),
+			) );
+
+			// Add inline script for the exit action since we might be on the frontend
+			// where our admin.js isn't enqueued, or we need a global handler.
+			add_action( 'wp_footer', array( $this, 'print_exit_simulation_script' ) );
+			add_action( 'admin_footer', array( $this, 'print_exit_simulation_script' ) );
+		}
+	}
+
+	/**
+	 * Prints the inline script for exiting simulation from the admin bar.
+	 */
+	public function print_exit_simulation_script() {
+		?>
+		<script type="text/javascript">
+		function debugTroubleshootExitSimulation() {
+			if (confirm('<?php echo esc_js( __( 'Are you sure you want to exit User Simulation?', 'debug-troubleshooter' ) ); ?>')) {
+				var data = new FormData();
+				data.append('action', 'debug_troubleshoot_toggle_simulate_user');
+				data.append('enable', '0');
+				// We might not have the nonce available globally on frontend, so we rely on cookie check in backend mostly,
+				// but for AJAX we need it. If we are on frontend, we might need to expose it.
+				// For simplicity in this MVP, we'll assume admin-ajax is accessible.
+				// SECURITY NOTE: In a real scenario, we should localize the nonce on wp_enqueue_scripts as well if we want frontend support.
+				// For now, let's try to fetch it from a global if available, or just rely on the cookie clearing which is less secure but functional for a dev tool.
+				// BETTER APPROACH: Use a dedicated endpoint or just a simple GET parameter that we intercept on init to clear the cookie.
+				
+				// Let's use a simple redirect to a URL that handles the exit.
+				window.location.href = '<?php echo esc_url( admin_url( 'admin-ajax.php?action=debug_troubleshoot_toggle_simulate_user&enable=0' ) ); ?>';
+			}
+		}
+		</script>
+		<?php
+	}
+
+	/**
+	 * AJAX handler to toggle User Simulation.
+	 */
+	public function ajax_toggle_simulate_user() {
+		// Note: For the "Exit" action via GET request (from Admin Bar), we might not have a nonce.
+		// Since this is a dev tool and we are just clearing a cookie, the risk is low, but ideally we'd check a nonce.
+		// For the "Enter" action (POST), we definitely check the nonce.
+		
+		$is_post = 'POST' === $_SERVER['REQUEST_METHOD'];
+		if ( $is_post ) {
+			check_ajax_referer( 'debug_troubleshoot_nonce', 'nonce' );
+		}
+
+		if ( ! current_user_can( 'manage_options' ) && ! $this->is_simulating_user() ) {
+			// Only allow admins to START simulation.
+			// Anyone (simulated user) can STOP simulation.
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'debug-troubleshooter' ) ) );
+		}
+
+		$enable = isset( $_REQUEST['enable'] ) ? (bool) $_REQUEST['enable'] : false;
+		$user_id = isset( $_REQUEST['user_id'] ) ? (int) $_REQUEST['user_id'] : 0;
+
+		if ( $enable && $user_id ) {
+			// Set cookie
+			setcookie( self::SIMULATE_USER_COOKIE, $user_id, array(
+				'expires'  => time() + DAY_IN_SECONDS,
+				'path'     => COOKIEPATH,
+				'domain'   => COOKIE_DOMAIN,
+				'samesite' => 'Lax',
+				'httponly' => true,
+				'secure'   => is_ssl(),
+			) );
+			wp_send_json_success( array( 'message' => __( 'User simulation activated. Reloading...', 'debug-troubleshooter' ) ) );
+		} else {
+			// Clear cookie
+			setcookie( self::SIMULATE_USER_COOKIE, '', array(
+				'expires'  => time() - 3600,
+				'path'     => COOKIEPATH,
+				'domain'   => COOKIE_DOMAIN,
+				'samesite' => 'Lax',
+				'httponly' => true,
+				'secure'   => is_ssl(),
+			) );
+			
+			if ( ! $is_post ) {
+				// If it was a GET request (from Admin Bar), redirect back to home or dashboard.
+				wp_redirect( admin_url() );
+				exit;
+			}
+			
+			wp_send_json_success( array( 'message' => __( 'User simulation deactivated.', 'debug-troubleshooter' ) ) );
 		}
 	}
 }

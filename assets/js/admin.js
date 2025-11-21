@@ -315,4 +315,40 @@ jQuery(document).ready(function($) {
             document.body.removeChild(textArea);
         });
     });
+    // Handle User Simulation
+    $('#simulate-user-btn').on('click', function() {
+        var $button = $(this);
+        var userId = $('#simulate-user-select').val();
+
+        if (!userId) {
+            showAlert(debugTroubleshoot.alert_title_error, 'Please select a user to simulate.', 'error');
+            return;
+        }
+
+        $button.prop('disabled', true).text('Switching...');
+
+        $.ajax({
+            url: debugTroubleshoot.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'debug_troubleshoot_toggle_simulate_user',
+                nonce: debugTroubleshoot.nonce,
+                enable: 1,
+                user_id: userId
+            },
+            success: function(response) {
+                if (response.success) {
+                    showAlert(debugTroubleshoot.alert_title_success, response.data.message);
+                    setTimeout(function() { location.reload(); }, 500);
+                } else {
+                    showAlert(debugTroubleshoot.alert_title_error, response.data.message, 'error');
+                    $button.prop('disabled', false).text('Simulate User');
+                }
+            },
+            error: function() {
+                showAlert(debugTroubleshoot.alert_title_error, 'An AJAX error occurred.', 'error');
+                $button.prop('disabled', false).text('Simulate User');
+            }
+        });
+    });
 });

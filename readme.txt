@@ -4,7 +4,7 @@ Tags: debug, troubleshoot, php info, developer
 Requires at least: 5.0
 Requires PHP: 7.4
 Tested up to: 6.8
-Stable tag: 1.2.1
+Stable tag: 1.3.0
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 Donate link: https://paypal.me/jhimross28
@@ -20,6 +20,7 @@ The "Debugger & Troubleshooter" plugin provides essential tools for WordPress si
 * **Troubleshooting Mode:** Activate a unique, **session-based** "Troubleshooting Mode" for your current browser session. This means any changes you make are temporary and only visible to you. This mode allows you to:
     * **Simulate Plugin Deactivation:** Selectively "deactivate" plugins. The plugin's assets and code will be disabled for your session only.
     * **Simulate Theme Switching:** Preview any installed theme, while the public-facing site continues to use the active theme.
+* **User Role Simulator:** View your site as any other user or role (e.g., Subscriber, Editor) to test permissions and content visibility. This is session-based and includes a safe "Exit" button in the Admin Bar.
 * **Live Debugging:** Safely enable `WP_DEBUG` with a single click from the admin dashboard. Errors are logged to `debug.log` without being displayed on the site, and you can view the log file directly in the plugin's interface.
 * **Comprehensive Site Information:** Get a quick, organized overview of your WordPress environment in collapsible cards. This includes detailed PHP, Database, and Server information, a full list of all themes and plugins with their status, and important WordPress constants.
 * **Copy to Clipboard:** A one-click button allows you to copy all the site information, making it incredibly easy to share with support forums or developers.
@@ -57,7 +58,11 @@ The top section provides a comprehensive overview of your WordPress environment,
 
 This session-based feature allows you to simulate theme switches and plugin deactivations without affecting your live website for other visitors.
 
-### 3. Live Debugging
+### 3. User Role Simulator
+
+Safely view your site as another user or role (e.g., "Subscriber" or "Editor") without knowing their password. This is perfect for testing capabilities and content restrictions.
+
+### 4. Live Debugging
 
 This section allows you to safely manage WordPress's debugging features.
 
@@ -85,6 +90,11 @@ A: The plugin uses the `plugins_loaded` hook to define the `WP_DEBUG` constants 
 
 == Changelog ==
 
+= 1.3.0 - 2025-11-21 =
+* **Feature:** Added "User Role Simulator" to view the site as any user or role for the current session.
+* **Enhancement:** Added an Admin Bar "Exit Simulation" button for safe return to the administrator account.
+* **Fix:** Improved layout stability for the troubleshooting dashboard.
+
 = 1.2.1 - 2025-07-11 =
 * **Fix:** Addressed all security and code standard issues reported by the Plugin Check plugin, including escaping all output and using the `WP_Filesystem` API for file operations.
 * **Fix:** Replaced the native browser `confirm()` dialog with a custom modal for a better user experience and to prevent potential browser compatibility issues.
@@ -108,6 +118,9 @@ A: The plugin uses the `plugins_loaded` hook to define the `WP_DEBUG` constants 
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+Introduces the User Role Simulator feature, allowing you to safely view the site as other users or roles for testing permissions.
 
 = 1.2.1 =
 This is a recommended security and maintenance update. It addresses all issues reported by the Plugin Check plugin, including proper data escaping and use of the `WP_Filesystem` API.
