@@ -1,73 +1,99 @@
-# Debugger & Troubleshooter 
+# ⚙️ Debugger & Troubleshooter
 
-A WordPress plugin for debugging & troubleshooting. Safely simulate plugin deactivation, theme switching, and WP_DEBUG.
+A powerful, session-based WordPress plugin for safe debugging and comprehensive troubleshooting.
 
-## Description
+**Contributors:** jhimross
+**Tags:** debug, troubleshoot, php info, developer
+**Requires at least:** 5.0
+**Requires PHP:** 7.4
+**Tested up to:** 6.8
+**Stable tag:** 1.3.0
+**License:** GPL-2.0+
+**License URI:** http://www.gnu.org/licenses/gpl-2.0.txt
+**Donate link:** https://paypal.me/jhimross28
 
-The "Debugger & Troubleshooter" plugin provides essential tools for WordPress site administrators to diagnose and resolve issues efficiently. It offers a dedicated section in the WordPress dashboard that displays comprehensive site health information and powerful debugging toggles.
+---
 
-## Key Features:
+## 🌟 Key Features
 
-* **Troubleshooting Mode:** Activate a unique, **session-based** "Troubleshooting Mode" for your current browser session. This means any changes you make are temporary and only visible to you. This mode allows you to:
-    * **Simulate Plugin Deactivation:** Selectively "deactivate" plugins. The plugin's assets and code will be disabled for your session only.
-    * **Simulate Theme Switching:** Preview any installed theme, while the public-facing site continues to use the active theme.
-* **Live Debugging:** Safely enable `WP_DEBUG` with a single click from the admin dashboard. Errors are logged to `debug.log` without being displayed on the site, and you can view the log file directly in the plugin's interface.
-* **Comprehensive Site Information:** Get a quick, organized overview of your WordPress environment in collapsible cards. This includes detailed PHP, Database, and Server information, a full list of all themes and plugins with their status, and important WordPress constants.
-* **Copy to Clipboard:** A one-click button allows you to copy all the site information, making it incredibly easy to share with support forums or developers.
-* **Safe Debugging & Cache Bypassing:** All troubleshooting actions are session-based. The plugin automatically attempts to bypass caching when Troubleshooting Mode is active, ensuring your changes are reflected instantly.
-* **User-Friendly Interface:** An intuitive dashboard interface makes it easy to access all features.
-* **Admin Notices:** Clear notices alert you when Troubleshooting Mode is active.
+The "Debugger & Troubleshooter" plugin provides essential, non-disruptive tools for diagnosing and resolving issues on your WordPress site.
 
-This plugin is an invaluable tool for developers, site administrators, and anyone who needs to debug WordPress issues without risking site downtime or affecting user experience.
+* **Troubleshooting Mode (Session-Based):**
+    * Activate a unique mode **only visible to your current browser session**.
+    * **Simulate Plugin Deactivation:** Selectively "deactivate" plugins. Their assets and code are disabled for you, while the live site remains unchanged for everyone else.
+    * **Simulate Theme Switching:** Preview any installed theme safely, while the public-facing site continues to use the active theme.
+* **User Role Simulator:** View your site as any other user or role (e.g., Subscriber, Editor) to test permissions and content visibility without knowing their password. Includes a safe "Exit" button in the Admin Bar.
+* **Live Debugging:**
+    * Safely enable `WP_DEBUG` and `WP_DEBUG_LOG` from the admin dashboard with a single click—no editing `wp-config.php`.
+    * Errors are logged to `debug.log` without being displayed on the public site (`WP_DEBUG_DISPLAY` is kept off).
+    * View and clear the `debug.log` file directly in the plugin's interface.
+* **Comprehensive Site Information:** Get an organized, collapsible overview of your entire WordPress environment:
+    * Detailed PHP, Database, and Server information.
+    * Full list of all themes and plugins with their status.
+    * Important WordPress constants.
+    * **Copy to Clipboard:** One-click button to copy all site info for easy sharing with support.
+* **Cache Bypassing:** Automatically attempts to bypass caching (by defining `DONOTCACHEPAGE`) when Troubleshooting Mode is active, ensuring your changes are reflected instantly.
 
-## Installation
+---
 
-1.  **Download** the plugin ZIP file.
-2.  **Upload** the plugin to your WordPress site:
-    * Navigate to **Plugins > Add New** in your WordPress dashboard.
-    * Click the "Upload Plugin" button.
-    * Choose the downloaded ZIP file and click "Install Now".
-3.  **Activate** the plugin through the 'Plugins' menu in WordPress.
-4.  Once activated, go to **Tools > Debugger & Troubleshooter** to access the plugin's features.
+## 🚀 Installation
 
-**Manual Installation (if needed):**
+### Standard Installation
 
-1.  **Extract** the `debug-troubleshooter.zip` file.
+1.  In your WordPress dashboard, navigate to **Plugins > Add New**.
+2.  Click the **"Upload Plugin"** button.
+3.  Choose the downloaded plugin ZIP file and click **"Install Now"**.
+4.  **Activate** the plugin through the 'Plugins' menu.
+5.  Access the features at **Tools > Debugger & Troubleshooter**.
+
+### Manual Installation
+
+1.  **Extract** the plugin ZIP file.
 2.  **Upload** the `debug-troubleshooter` folder to the `/wp-content/plugins/` directory via FTP or your hosting's file manager.
 3.  **Activate** the plugin through the 'Plugins' menu in WordPress.
 
-## Usage
+---
 
-Once the plugin is installed and activated, navigate to **Tools > Debugger & Troubleshooter** in your WordPress dashboard.
+## 📖 Usage Guide
+
+Navigate to **Tools > Debugger & Troubleshooter** in your WordPress dashboard to access all features.
 
 ### 1. Site Information
 
-The top section provides a comprehensive overview of your WordPress environment, organized into collapsible cards that are closed by default. Click on any card title to expand it and view the details.
+This section provides an organized overview of your environment in collapsible cards (closed by default). Click a card title (e.g., PHP Information, Database) to expand the details.
 
 ### 2. Troubleshooting Mode
 
-This session-based feature allows you to simulate theme switches and plugin deactivations without affecting your live website for other visitors.
+Use this session-based section to safely **Simulate Theme Switching** and **Simulate Plugin Deactivation** without affecting your live website for other visitors.
 
-### 3. Live Debugging
+### 3. User Role Simulator
 
-This section allows you to safely manage WordPress's debugging features.
+Click the button to switch your view to that of a different user role (like "Subscriber" or "Editor"). This is perfect for testing content restrictions and permissions. A prominent "Exit Simulation" button will appear in your Admin Bar to safely return to your administrator account.
 
-* **Enable Live Debug:** Click this button to programmatically enable `WP_DEBUG` and `WP_DEBUG_LOG`, while keeping `WP_DEBUG_DISPLAY` off. This logs errors to `wp-content/debug.log` without showing them to visitors.
-* **Debug Log Viewer:** A text area displays the contents of your `debug.log` file, allowing you to see errors as they are generated.
-* **Clear Log:** Safely clear the `debug.log` file with a click.
+### 4. Live Debugging
 
-## Frequently Asked Questions
+Safely manage WordPress's debugging constants from the UI.
+
+* **Enable Live Debug:** Programmatically enables `WP_DEBUG` and `WP_DEBUG_LOG`, logging errors to `wp-content/debug.log` without displaying them on the site.
+* **Debug Log Viewer:** A text area displays the contents of your `debug.log` file, allowing real-time error viewing.
+* **Clear Log:** Safely clear the `debug.log` file with a single click.
+
+---
+
+## ❓ Frequently Asked Questions
 
 **Q: How does Troubleshooting Mode work without affecting my live site?**
-A: Troubleshooting Mode uses a browser cookie specific to your session. When enabled, the plugin filters WordPress functions that determine active plugins and themes, redirecting them to your simulated settings. This happens only for your browser.
+A: Troubleshooting Mode uses a browser cookie specific to your session. The plugin uses WordPress filters to redirect core functions (which determine active plugins and themes) to your simulated settings. This process is isolated to your browser.
 
 **Q: Will this work if I have a caching plugin active?**
 A: Yes. When Troubleshooting Mode is active, the plugin defines the `DONOTCACHEPAGE` constant, which instructs most caching plugins and hosting environments to bypass the cache for your session.
 
-**Q: How does Live Debugging work without editing wp-config.php?**
-A: The plugin uses the `plugins_loaded` hook to define the `WP_DEBUG` constants programmatically. This happens very early in the WordPress loading sequence, effectively enabling debug mode for all requests while the feature is turned on.
+**Q: How does Live Debugging work without editing `wp-config.php`?**
+A: The plugin leverages the `plugins_loaded` hook to define the necessary `WP_DEBUG` constants programmatically very early in the WordPress loading sequence, effectively enabling debug mode for all requests while the feature is turned on.
 
-## Screenshots
+---
+
+## 🖼️ Screenshots
 
 1.  The main Debug & Troubleshooter dashboard showing Site Information.
 ![screenshot-1](https://github.com/user-attachments/assets/fb8beb25-06f9-4c5d-b19c-094520c95670)
@@ -81,4 +107,37 @@ A: The plugin uses the `plugins_loaded` hook to define the `WP_DEBUG` constants 
 4.  The Live Debugging section with the log viewer.
 <img width="1918" height="975" alt="screenshot-4" src="https://github.com/user-attachments/assets/18d6ddbc-d487-4c81-a6db-3ba34db3a0ed" />
 
+5. The User Role Simulator.
+<img width="1750" height="279" alt="image" src="https://github.com/user-attachments/assets/aa95b2ed-8987-4a74-aea5-8aa3c94c9262" />
 
+
+---
+
+## Changelog
+
+### 1.3.0 - 2025-11-21
+* **Feature:** Added "User Role Simulator" to view the site as any user or role for the current session.
+* **Enhancement:** Added an Admin Bar "Exit Simulation" button for safe return to the administrator account.
+* **Fix:** Improved layout stability for the troubleshooting dashboard.
+
+### 1.2.1 - 2025-07-11
+* **Fix:** Addressed all security and code standard issues reported by the Plugin Check plugin, including escaping all output and using the `WP_Filesystem` API for file operations.
+* **Fix:** Replaced the native browser `confirm()` dialog with a custom modal for a better user experience and to prevent potential browser compatibility issues.
+
+### 1.2.0 - 2025-07-11
+* **Feature:** Added "Live Debugging" section to safely enable/disable `WP_DEBUG` and `WP_DEBUG_LOG` from the UI without editing `wp-config.php`.
+* **Feature:** Added a `debug.log` file viewer and a "Clear Log" button to the Live Debugging section.
+
+### 1.1.1 - 2025-07-10
+* **Fix:** Implemented cache-bypassing measures for Troubleshooting Mode. The plugin now defines the `DONOTCACHEPAGE` constant and sends no-cache headers to ensure compatibility with most caching plugins and server-side caches.
+
+### 1.1.0 - 2025-07-09
+* **Feature:** Site Information cards (WordPress, PHP, Database, Server, Constants) are now collapsible and closed by default for a cleaner interface.
+* **Feature:** Added a "Copy to Clipboard" button to easily copy all site information for support requests or documentation.
+* **Enhancement:** The "WordPress Information" card now displays a detailed list of all installed themes and plugins, along with their respective active, inactive, or network-active status.
+* **Enhancement:** The theme and plugin lists within the "WordPress Information" card are now compact, showing counts by default with a "Show All" toggle to view the complete list.
+* **Enhancement:** Expanded the displayed information for PHP, Server, and WordPress constants.
+* **Fix:** Resolved a bug that prevented the collapsible sections from functioning correctly.
+
+### 1.0.0 – 2025-06-25
+* Initial release.
