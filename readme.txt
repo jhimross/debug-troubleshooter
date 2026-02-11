@@ -4,7 +4,7 @@ Tags: debug, troubleshoot, php info, developer
 Requires at least: 5.0
 Requires PHP: 7.4
 Tested up to: 6.8
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 Donate link: https://paypal.me/jhimross28
@@ -91,6 +91,12 @@ A: The plugin uses the `plugins_loaded` hook to define the `WP_DEBUG` constants 
 
 == Changelog ==
 
+=1.3.2 - 2026-02-11 =
+* **Fix:** Resolved a UI conflict where the confirmation modal appeared automatically upon page load due to CSS class interference from other plugins.
+* **Fix:** Improved modal layering (z-index) to ensure the Success/Error alert modal correctly appears above the confirmation modal.
+* **Fix:** Updated the "Confirm" action in the Debug Log viewer to automatically close the confirmation dialog before showing the result, preventing the UI from becoming unclickable.
+* **Enhancement:** Hardened the .hidden CSS utility with !important to prevent external themes or plugins from forcing hidden elements to display.
+
 = 1.3.1 - 2025-11-21 =
 * **Fix:** Resolved a critical issue where admin scripts were not loading due to a hook name mismatch.
 * **Fix:** Addressed WordPress coding standard issues (deprecated functions, security hardening).
@@ -124,6 +130,9 @@ A: The plugin uses the `plugins_loaded` hook to define the `WP_DEBUG` constants 
 
 == Upgrade Notice ==
 
+= 1.3.2 =
+This release fixes a UI conflict where the confirmation modal appeared automatically upon page load due to CSS class interference from other plugins.
+
 = 1.3.1 =
 This release fixes a critical bug affecting the plugin's layout and functionality, and improves code standards.
 
@@ -135,3 +144,4 @@ This is a recommended security and maintenance update. It addresses all issues r
 
 = 1.2.0 =
 This version adds a major new feature: "Live Debugging." You can now enable WP_DEBUG and view the debug.log file directly from the plugin's admin page without editing any files.
+
