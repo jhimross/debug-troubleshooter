@@ -1,4 +1,4 @@
-jQuery(document).ready(function($) {
+jQuery(document).ready(function ($) {
     var isTroubleshooting = debugTroubleshoot.is_troubleshooting;
     var troubleshootState = debugTroubleshoot.current_state;
     var isDebugMode = debugTroubleshoot.is_debug_mode;
@@ -21,12 +21,12 @@ jQuery(document).ready(function($) {
     }
 
     // Close alert modal
-    $('#debug-troubleshoot-alert-close').on('click', function() {
+    $('#debug-troubleshoot-alert-close').on('click', function () {
         $('#debug-troubleshoot-alert-modal').addClass('hidden');
     });
 
     // Close confirmation modal
-    $('#debug-troubleshoot-confirm-cancel').on('click', function() {
+    $('#debug-troubleshoot-confirm-cancel').on('click', function () {
         $('#debug-troubleshoot-confirm-modal').addClass('hidden');
     });
 
@@ -34,7 +34,7 @@ jQuery(document).ready(function($) {
     // --- EVENT HANDLERS ---
 
     // Handle toggle button for troubleshooting mode
-    $('#troubleshoot-mode-toggle').on('click', function() {
+    $('#troubleshoot-mode-toggle').on('click', function () {
         var $button = $(this);
         var enableMode = !isTroubleshooting; // Determine if we are enabling or disabling
 
@@ -48,18 +48,18 @@ jQuery(document).ready(function($) {
                 nonce: debugTroubleshoot.nonce,
                 enable: enableMode ? 1 : 0
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     showAlert(debugTroubleshoot.alert_title_success, response.data.message);
                     isTroubleshooting = enableMode; // Update state
                     // Refresh the page to apply cookie changes immediately
-                    setTimeout(function() { location.reload(); }, 500);
+                    setTimeout(function () { location.reload(); }, 500);
                 } else {
                     showAlert(debugTroubleshoot.alert_title_error, response.data.message, 'error');
                     $button.prop('disabled', false);
                 }
             },
-            error: function() {
+            error: function () {
                 showAlert(debugTroubleshoot.alert_title_error, 'An AJAX error occurred.', 'error');
                 $button.prop('disabled', false);
             }
@@ -67,7 +67,7 @@ jQuery(document).ready(function($) {
     });
 
     // Handle toggle button for Live Debug mode
-    $('#debug-mode-toggle').on('click', function() {
+    $('#debug-mode-toggle').on('click', function () {
         var $button = $(this);
         var enableMode = !isDebugMode;
 
@@ -80,7 +80,7 @@ jQuery(document).ready(function($) {
                 action: 'debug_troubleshoot_toggle_debug_mode',
                 nonce: debugTroubleshoot.nonce,
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     showAlert(debugTroubleshoot.alert_title_success, response.data.message);
                     isDebugMode = enableMode; // Update state
@@ -94,37 +94,34 @@ jQuery(document).ready(function($) {
                     showAlert(debugTroubleshoot.alert_title_error, response.data.message, 'error');
                 }
             },
-            error: function() {
+            error: function () {
                 showAlert(debugTroubleshoot.alert_title_error, 'An AJAX error occurred.', 'error');
             },
-            complete: function() {
+            complete: function () {
                 $button.prop('disabled', false);
             }
         });
     });
 
     // Handle Clear Log button - Show confirmation modal
-    $('#clear-debug-log').on('click', function() {
+    $('#clear-debug-log').on('click', function () {
         var modal = $('#debug-troubleshoot-confirm-modal');
         $('#debug-troubleshoot-confirm-title').text('Confirm Action');
         $('#debug-troubleshoot-confirm-message').text('Are you sure you want to clear the debug.log file? This action cannot be undone.');
         modal.removeClass('hidden');
     });
-    
+
     // Handle the actual log clearing after confirmation
-    $('#debug-troubleshoot-confirm-ok').on('click', function() {
+    $('#debug-troubleshoot-confirm-ok').on('click', function () {
         var $button = $('#clear-debug-log');
         $button.prop('disabled', true);
+
+        // IMMEDIATELY hide the confirm modal before showing the alert
         $('#debug-troubleshoot-confirm-modal').addClass('hidden');
 
         $.ajax({
-            url: debugTroubleshoot.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'debug_troubleshoot_clear_debug_log',
-                nonce: debugTroubleshoot.nonce
-            },
-            success: function(response) {
+            // ... existing ajax code ...
+            success: function (response) {
                 if (response.success) {
                     $('#debug-log-viewer').val('Debug log cleared successfully.');
                     showAlert(debugTroubleshoot.alert_title_success, response.data.message);
@@ -132,10 +129,10 @@ jQuery(document).ready(function($) {
                     showAlert(debugTroubleshoot.alert_title_error, response.data.message, 'error');
                 }
             },
-            error: function() {
+            error: function () {
                 showAlert(debugTroubleshoot.alert_title_error, 'An AJAX error occurred.', 'error');
             },
-            complete: function() {
+            complete: function () {
                 $button.prop('disabled', false);
             }
         });
@@ -152,7 +149,7 @@ jQuery(document).ready(function($) {
         }
 
         // Check plugins based on troubleshooting state
-        $('.plugin-list input[type="checkbox"]').each(function() {
+        $('.plugin-list input[type="checkbox"]').each(function () {
             var $checkbox = $(this);
             var pluginFile = $checkbox.val();
 
@@ -170,7 +167,7 @@ jQuery(document).ready(function($) {
     }
 
     // Handle applying troubleshooting changes
-    $('#apply-troubleshoot-changes').on('click', function() {
+    $('#apply-troubleshoot-changes').on('click', function () {
         if (!isTroubleshooting) {
             showAlert(debugTroubleshoot.alert_title_error, 'Please enter troubleshooting mode first.', 'error');
             return;
@@ -181,7 +178,7 @@ jQuery(document).ready(function($) {
 
         var selectedTheme = $('#troubleshoot-theme-select').val();
         var selectedPlugins = [];
-        $('.plugin-list input[type="checkbox"]:checked').each(function() {
+        $('.plugin-list input[type="checkbox"]:checked').each(function () {
             selectedPlugins.push($(this).val());
         });
 
@@ -194,19 +191,19 @@ jQuery(document).ready(function($) {
                 theme: selectedTheme,
                 plugins: selectedPlugins
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     showAlert(debugTroubleshoot.alert_title_success, response.data.message);
                     // Refresh the page to apply cookie changes immediately
-                    setTimeout(function() { location.reload(); }, 500);
+                    setTimeout(function () { location.reload(); }, 500);
                 } else {
                     showAlert(debugTroubleshoot.alert_title_error, response.data.message, 'error');
                 }
             },
-            error: function() {
+            error: function () {
                 showAlert(debugTroubleshoot.alert_title_error, 'An AJAX error occurred.', 'error');
             },
-            complete: function() {
+            complete: function () {
                 $button.prop('disabled', false).text('Apply Troubleshooting Changes');
             }
         });
@@ -215,16 +212,16 @@ jQuery(document).ready(function($) {
     // --- UI Toggles ---
 
     // Collapsible Site Info Cards
-    $('.card-collapsible-header').on('click', function() {
+    $('.card-collapsible-header').on('click', function () {
         var $header = $(this);
         var $content = $header.siblings('.card-collapsible-content');
-        
+
         $content.slideToggle(200);
         $header.toggleClass('collapsed');
     });
 
     // Toggle for theme/plugin sub-lists
-    $('.info-sub-list-toggle').on('click', function(e) {
+    $('.info-sub-list-toggle').on('click', function (e) {
         e.preventDefault();
         var $link = $(this);
         var targetId = $link.data('target');
@@ -240,7 +237,7 @@ jQuery(document).ready(function($) {
     });
 
     // Copy Site Info to Clipboard
-    $('#copy-site-info').on('click', function(e) {
+    $('#copy-site-info').on('click', function (e) {
         e.stopPropagation(); // Prevent any other click events
         var $button = $(this);
         var siteInfoText = '';
@@ -251,22 +248,22 @@ jQuery(document).ready(function($) {
             var title = card.querySelector('h3').innerText;
             var infoList = card.querySelectorAll('p, li, h4');
             siteInfoText += '### ' + title + ' ###\n';
-            infoList.forEach(function(item) {
-				if (item.tagName.toLowerCase() === 'h4') {
-					siteInfoText += '\n--- ' + item.textContent.trim() + ' ---\n';
-				} else {
-					var key = item.querySelector('strong') ? item.querySelector('strong').textContent.trim() : '';
-					var itemClone = item.cloneNode(true);
-					if (itemClone.querySelector('strong')) {
-						itemClone.querySelector('strong').remove();
-					}
-					var value = itemClone.textContent.trim().replace(/\s+/g, ' ');
-					if (key) {
-						siteInfoText += key + ' ' + value + '\n';
-					} else {
-						siteInfoText += value + '\n';
-					}
-				}
+            infoList.forEach(function (item) {
+                if (item.tagName.toLowerCase() === 'h4') {
+                    siteInfoText += '\n--- ' + item.textContent.trim() + ' ---\n';
+                } else {
+                    var key = item.querySelector('strong') ? item.querySelector('strong').textContent.trim() : '';
+                    var itemClone = item.cloneNode(true);
+                    if (itemClone.querySelector('strong')) {
+                        itemClone.querySelector('strong').remove();
+                    }
+                    var value = itemClone.textContent.trim().replace(/\s+/g, ' ');
+                    if (key) {
+                        siteInfoText += key + ' ' + value + '\n';
+                    } else {
+                        siteInfoText += value + '\n';
+                    }
+                }
             });
             siteInfoText += '\n';
         }
@@ -275,13 +272,13 @@ jQuery(document).ready(function($) {
         siteInfoContent.querySelectorAll('.debug-troubleshooter-card').forEach(appendCardInfo);
 
         // Use modern Clipboard API
-        navigator.clipboard.writeText(siteInfoText.trim()).then(function() {
+        navigator.clipboard.writeText(siteInfoText.trim()).then(function () {
             var originalText = debugTroubleshoot.copy_button_text;
             $button.text(debugTroubleshoot.copied_button_text);
-            setTimeout(function() {
+            setTimeout(function () {
                 $button.text(originalText);
             }, 2000);
-        }).catch(function(err) {
+        }).catch(function (err) {
             // Fallback for older browsers
             var textArea = document.createElement("textarea");
             textArea.value = siteInfoText.trim();
@@ -303,7 +300,7 @@ jQuery(document).ready(function($) {
                 if (successful) {
                     var originalText = debugTroubleshoot.copy_button_text;
                     $button.text(debugTroubleshoot.copied_button_text);
-                    setTimeout(function() {
+                    setTimeout(function () {
                         $button.text(originalText);
                     }, 2000);
                 } else {
@@ -316,7 +313,7 @@ jQuery(document).ready(function($) {
         });
     });
     // Handle User Simulation
-    $('#simulate-user-btn').on('click', function() {
+    $('#simulate-user-btn').on('click', function () {
         var $button = $(this);
         var userId = $('#simulate-user-select').val();
 
@@ -336,16 +333,16 @@ jQuery(document).ready(function($) {
                 enable: 1,
                 user_id: userId
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     showAlert(debugTroubleshoot.alert_title_success, response.data.message);
-                    setTimeout(function() { location.reload(); }, 500);
+                    setTimeout(function () { location.reload(); }, 500);
                 } else {
                     showAlert(debugTroubleshoot.alert_title_error, response.data.message, 'error');
                     $button.prop('disabled', false).text('Simulate User');
                 }
             },
-            error: function() {
+            error: function () {
                 showAlert(debugTroubleshoot.alert_title_error, 'An AJAX error occurred.', 'error');
                 $button.prop('disabled', false).text('Simulate User');
             }
