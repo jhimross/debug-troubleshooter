@@ -3,12 +3,12 @@
  * Plugin Name:       Debugger & Troubleshooter
  * Plugin URI:        https://wordpress.org/plugins/debugger-troubleshooter
  * Description:       A WordPress plugin for debugging and troubleshooting, allowing simulated plugin deactivation and theme switching without affecting the live site.
- * Version:           1.3.0
+ * Version:           1.3.1
  * Author:            Jhimross
  * Author URI:        https://profiles.wordpress.org/jhimross
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       debug-troubleshooter
+ * Text Domain:       debugger-troubleshooter
  * Domain Path:       /languages
  */
 
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Define plugin constants.
  */
-define( 'DBGTBL_VERSION', '1.3.0' );
+define( 'DBGTBL_VERSION', '1.3.1' );
 define( 'DBGTBL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DBGTBL_URL', plugin_dir_url( __FILE__ ) );
 define( 'DBGTBL_BASENAME', plugin_basename( __FILE__ ) );
@@ -57,7 +57,8 @@ class Debug_Troubleshooter {
 	 */
 	public function __construct() {
 		// Load text domain for internationalization.
-		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
+		// Load text domain for internationalization.
+		// add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
 
 		// Initialize admin hooks.
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
@@ -78,22 +79,17 @@ class Debug_Troubleshooter {
 		add_action( 'admin_bar_menu', array( $this, 'admin_bar_exit_simulation' ), 999 );
 	}
 
-	/**
-	 * Load plugin text domain.
-	 */
-	public function load_textdomain() {
-		load_plugin_textdomain( 'debug-troubleshooter', false, basename( DBGTBL_DIR ) . '/languages/' );
-	}
+
 
 	/**
 	 * Add admin menu page.
 	 */
 	public function add_admin_menu() {
 		add_management_page(
-			__( 'Debugger & Troubleshooter', 'debug-troubleshooter' ),
-			__( 'Debugger & Troubleshooter', 'debug-troubleshooter' ),
+			__( 'Debugger & Troubleshooter', 'debugger-troubleshooter' ),
+			__( 'Debugger & Troubleshooter', 'debugger-troubleshooter' ),
 			'manage_options',
-			'debug-troubleshooter',
+			'debugger-troubleshooter',
 			array( $this, 'render_admin_page' )
 		);
 	}
@@ -104,7 +100,7 @@ class Debug_Troubleshooter {
 	 * @param string $hook The current admin page hook.
 	 */
 	public function enqueue_admin_scripts( $hook ) {
-		if ( 'tools_page_debug-troubleshooter' !== $hook ) {
+		if ( 'tools_page_debugger-troubleshooter' !== $hook ) {
 			return;
 		}
 
@@ -126,12 +122,12 @@ class Debug_Troubleshooter {
 				'active_plugins'      => get_option( 'active_plugins', array() ),
 				'active_sitewide_plugins' => is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', array() ) ) : array(),
 				'current_theme'       => get_stylesheet(),
-				'alert_title_success' => __( 'Success', 'debug-troubleshooter' ),
-				'alert_title_error'   => __( 'Error', 'debug-troubleshooter' ),
-				'copy_button_text'    => __( 'Copy to Clipboard', 'debug-troubleshooter' ),
-				'copied_button_text'  => __( 'Copied!', 'debug-troubleshooter' ),
-				'show_all_text'       => __( 'Show All', 'debug-troubleshooter' ),
-				'hide_text'           => __( 'Hide', 'debug-troubleshooter' ),
+				'alert_title_success' => __( 'Success', 'debugger-troubleshooter' ),
+				'alert_title_error'   => __( 'Error', 'debugger-troubleshooter' ),
+				'copy_button_text'    => __( 'Copy to Clipboard', 'debugger-troubleshooter' ),
+				'copied_button_text'  => __( 'Copied!', 'debugger-troubleshooter' ),
+				'show_all_text'       => __( 'Show All', 'debugger-troubleshooter' ),
+				'hide_text'           => __( 'Hide', 'debugger-troubleshooter' ),
 				'is_simulating_user'  => $this->is_simulating_user(),
 			)
 		);
@@ -144,14 +140,14 @@ class Debug_Troubleshooter {
 		$is_debug_mode_enabled = get_option( self::DEBUG_MODE_OPTION, 'disabled' ) === 'enabled';
 		?>
 		<div class="wrap debug-troubleshooter-wrap">
-			<h1 class="wp-heading-inline"><?php esc_html_e( 'Debugger & Troubleshooter', 'debug-troubleshooter' ); ?></h1>
+			<h1 class="wp-heading-inline"><?php esc_html_e( 'Debugger & Troubleshooter', 'debugger-troubleshooter' ); ?></h1>
 			<hr class="wp-header-end">
 
 			<div class="debug-troubleshooter-content">
 				<div class="debug-troubleshooter-section">
 					<div class="section-header">
-						<h2><?php esc_html_e( 'Site Information', 'debug-troubleshooter' ); ?></h2>
-						<button id="copy-site-info" class="button button-secondary"><?php esc_html_e( 'Copy to Clipboard', 'debug-troubleshooter' ); ?></button>
+						<h2><?php esc_html_e( 'Site Information', 'debugger-troubleshooter' ); ?></h2>
+						<button id="copy-site-info" class="button button-secondary"><?php esc_html_e( 'Copy to Clipboard', 'debugger-troubleshooter' ); ?></button>
 					</div>
 					<div id="site-info-content" class="section-content">
 						<?php $this->display_site_info(); ?>
@@ -160,20 +156,20 @@ class Debug_Troubleshooter {
 
 				<div class="debug-troubleshooter-section standalone-section">
 					<div class="section-header">
-						<h2><?php esc_html_e( 'Troubleshooting Mode', 'debug-troubleshooter' ); ?></h2>
+						<h2><?php esc_html_e( 'Troubleshooting Mode', 'debugger-troubleshooter' ); ?></h2>
 						<button id="troubleshoot-mode-toggle" class="button button-large <?php echo $this->is_troubleshooting_active() ? 'button-danger' : 'button-primary'; ?>">
-							<?php echo $this->is_troubleshooting_active() ? esc_html__( 'Exit Troubleshooting Mode', 'debug-troubleshooter' ) : esc_html__( 'Enter Troubleshooting Mode', 'debug-troubleshooter' ); ?>
+							<?php echo $this->is_troubleshooting_active() ? esc_html__( 'Exit Troubleshooting Mode', 'debugger-troubleshooter' ) : esc_html__( 'Enter Troubleshooting Mode', 'debugger-troubleshooter' ); ?>
 						</button>
 					</div>
 					<div class="section-content">
 						<p class="description">
-							<?php esc_html_e( 'Enter Troubleshooting Mode to simulate deactivating plugins and switching themes without affecting your live website for other visitors. This mode uses browser cookies and only applies to your session.', 'debug-troubleshooter' ); ?>
+							<?php esc_html_e( 'Enter Troubleshooting Mode to simulate deactivating plugins and switching themes without affecting your live website for other visitors. This mode uses browser cookies and only applies to your session.', 'debugger-troubleshooter' ); ?>
 						</p>
 
 						<div id="troubleshoot-mode-controls" class="troubleshoot-mode-controls <?php echo $this->is_troubleshooting_active() ? '' : 'hidden'; ?>">
 							<div class="debug-troubleshooter-card">
-								<h3><?php esc_html_e( 'Simulate Theme Switch', 'debug-troubleshooter' ); ?></h3>
-								<p class="description"><?php esc_html_e( 'Select a theme to preview. This will change the theme for your session only.', 'debug-troubleshooter' ); ?></p>
+								<h3><?php esc_html_e( 'Simulate Theme Switch', 'debugger-troubleshooter' ); ?></h3>
+								<p class="description"><?php esc_html_e( 'Select a theme to preview. This will change the theme for your session only.', 'debugger-troubleshooter' ); ?></p>
 								<select id="troubleshoot-theme-select" class="regular-text">
 									<?php
 									$themes           = wp_get_themes();
@@ -188,8 +184,8 @@ class Debug_Troubleshooter {
 							</div>
 
 							<div class="debug-troubleshooter-card">
-								<h3><?php esc_html_e( 'Simulate Plugin Deactivation', 'debug-troubleshooter' ); ?></h3>
-								<p class="description"><?php esc_html_e( 'Check plugins to simulate deactivating them for your session. Unchecked plugins will remain active.', 'debug-troubleshooter' ); ?></p>
+								<h3><?php esc_html_e( 'Simulate Plugin Deactivation', 'debugger-troubleshooter' ); ?></h3>
+								<p class="description"><?php esc_html_e( 'Check plugins to simulate deactivating them for your session. Unchecked plugins will remain active.', 'debugger-troubleshooter' ); ?></p>
 								<?php
 								$plugins                = get_plugins();
 								$troubleshoot_active_plugins = $this->troubleshoot_state && ! empty( $this->troubleshoot_state['plugins'] ) ? $this->troubleshoot_state['plugins'] : get_option( 'active_plugins', array() );
@@ -215,13 +211,13 @@ class Debug_Troubleshooter {
 									}
 									echo '</div>';
 								} else {
-									echo '<p>' . esc_html__( 'No plugins found.', 'debug-troubleshooter' ) . '</p>';
+									echo '<p>' . esc_html__( 'No plugins found.', 'debugger-troubleshooter' ) . '</p>';
 								}
 								?>
 							</div>
 
-							<button id="apply-troubleshoot-changes" class="button button-primary button-large"><?php esc_html_e( 'Apply Troubleshooting Changes', 'debug-troubleshooter' ); ?></button>
-							<p class="description"><?php esc_html_e( 'Applying changes will refresh the page to reflect your simulated theme and plugin states.', 'debug-troubleshooter' ); ?></p>
+							<button id="apply-troubleshoot-changes" class="button button-primary button-large"><?php esc_html_e( 'Apply Troubleshooting Changes', 'debugger-troubleshooter' ); ?></button>
+							<p class="description"><?php esc_html_e( 'Applying changes will refresh the page to reflect your simulated theme and plugin states.', 'debugger-troubleshooter' ); ?></p>
 						</div><!-- #troubleshoot-mode-controls -->
 					</div>
 				</div>
@@ -230,11 +226,11 @@ class Debug_Troubleshooter {
 
 				<div class="debug-troubleshooter-section standalone-section full-width-section">
 					<div class="section-header">
-						<h2><?php esc_html_e( 'User Role Simulator', 'debug-troubleshooter' ); ?></h2>
+						<h2><?php esc_html_e( 'User Role Simulator', 'debugger-troubleshooter' ); ?></h2>
 					</div>
 					<div class="section-content">
 						<p class="description">
-							<?php esc_html_e( 'View the site as a specific user or role. This allows you to test permissions and user-specific content without logging out. This only affects your session.', 'debug-troubleshooter' ); ?>
+							<?php esc_html_e( 'View the site as a specific user or role. This allows you to test permissions and user-specific content without logging out. This only affects your session.', 'debugger-troubleshooter' ); ?>
 						</p>
 						<?php $this->render_user_simulation_section(); ?>
 					</div>
@@ -242,20 +238,20 @@ class Debug_Troubleshooter {
 
 				<div class="debug-troubleshooter-section standalone-section full-width-section">
 					<div class="section-header">
-						<h2><?php esc_html_e( 'Live Debugging', 'debug-troubleshooter' ); ?></h2>
+						<h2><?php esc_html_e( 'Live Debugging', 'debugger-troubleshooter' ); ?></h2>
 						<button id="debug-mode-toggle" class="button button-large <?php echo $is_debug_mode_enabled ? 'button-danger' : 'button-primary'; ?>">
-							<?php echo $is_debug_mode_enabled ? esc_html__( 'Disable Live Debug', 'debug-troubleshooter' ) : esc_html__( 'Enable Live Debug', 'debug-troubleshooter' ); ?>
+							<?php echo $is_debug_mode_enabled ? esc_html__( 'Disable Live Debug', 'debugger-troubleshooter' ) : esc_html__( 'Enable Live Debug', 'debugger-troubleshooter' ); ?>
 						</button>
 					</div>
 					<div class="section-content">
 						<p class="description">
-							<?php esc_html_e( 'Enable this to turn on WP_DEBUG without editing your wp-config.php file. Errors will be logged to the debug.log file below, not displayed on the site.', 'debug-troubleshooter' ); ?>
+							<?php esc_html_e( 'Enable this to turn on WP_DEBUG without editing your wp-config.php file. Errors will be logged to the debug.log file below, not displayed on the site.', 'debugger-troubleshooter' ); ?>
 						</p>
 
 						<div class="debug-log-viewer-wrapper">
 							<div class="debug-log-header">
-								<h3><?php esc_html_e( 'Debug Log Viewer', 'debug-troubleshooter' ); ?></h3>
-								<button id="clear-debug-log" class="button button-secondary"><?php esc_html_e( 'Clear Log', 'debug-troubleshooter' ); ?></button>
+								<h3><?php esc_html_e( 'Debug Log Viewer', 'debugger-troubleshooter' ); ?></h3>
+								<button id="clear-debug-log" class="button button-secondary"><?php esc_html_e( 'Clear Log', 'debugger-troubleshooter' ); ?></button>
 							</div>
 							<textarea id="debug-log-viewer" readonly class="large-text" rows="15"><?php echo esc_textarea( $this->get_debug_log_content() ); ?></textarea>
 						</div>
@@ -269,7 +265,7 @@ class Debug_Troubleshooter {
 			<div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
 				<h3 id="debug-troubleshoot-alert-title" class="text-xl font-bold mb-4"></h3>
 				<p id="debug-troubleshoot-alert-message" class="text-gray-700 mb-6"></p>
-				<button id="debug-troubleshoot-alert-close" class="button button-primary"><?php esc_html_e( 'OK', 'debug-troubleshooter' ); ?></button>
+				<button id="debug-troubleshoot-alert-close" class="button button-primary"><?php esc_html_e( 'OK', 'debugger-troubleshooter' ); ?></button>
 			</div>
 		</div>
 
@@ -278,8 +274,8 @@ class Debug_Troubleshooter {
 				<h3 id="debug-troubleshoot-confirm-title" class="text-xl font-bold mb-4"></h3>
 				<p id="debug-troubleshoot-confirm-message" class="text-gray-700 mb-6"></p>
 				<div class="confirm-buttons">
-					<button id="debug-troubleshoot-confirm-cancel" class="button button-secondary"><?php esc_html_e( 'Cancel', 'debug-troubleshooter' ); ?></button>
-					<button id="debug-troubleshoot-confirm-ok" class="button button-danger"><?php esc_html_e( 'Confirm', 'debug-troubleshooter' ); ?></button>
+					<button id="debug-troubleshoot-confirm-cancel" class="button button-secondary"><?php esc_html_e( 'Cancel', 'debugger-troubleshooter' ); ?></button>
+					<button id="debug-troubleshoot-confirm-ok" class="button button-danger"><?php esc_html_e( 'Confirm', 'debugger-troubleshooter' ); ?></button>
 				</div>
 			</div>
 		</div>
@@ -296,22 +292,22 @@ class Debug_Troubleshooter {
 
 		// WordPress Information Card
 		echo '<div class="debug-troubleshooter-card collapsible">';
-		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'WordPress Information', 'debug-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
+		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'WordPress Information', 'debugger-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
 		echo '<div class="card-collapsible-content hidden">';
-		echo '<p><strong>' . esc_html__( 'WordPress Version:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( get_bloginfo( 'version' ) ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Site Language:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( get_locale() ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Permalink Structure:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( get_option( 'permalink_structure' ) ?: 'Plain' ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Multisite:', 'debug-troubleshooter' ) . '</strong> ' . ( is_multisite() ? 'Yes' : 'No' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'WordPress Version:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( get_bloginfo( 'version' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Site Language:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( get_locale() ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Permalink Structure:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( get_option( 'permalink_structure' ) ?: 'Plain' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Multisite:', 'debugger-troubleshooter' ) . '</strong> ' . ( is_multisite() ? 'Yes' : 'No' ) . '</p>';
 
 		// Themes List
 		$all_themes            = wp_get_themes();
 		$active_theme_obj      = wp_get_theme();
 		$inactive_themes_count = count( $all_themes ) - 1;
 
-		echo '<h4>' . esc_html__( 'Themes', 'debug-troubleshooter' ) . '</h4>';
-		echo '<p><strong>' . esc_html__( 'Active Theme:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( $active_theme_obj->get( 'Name' ) ) . ' (' . esc_html( $active_theme_obj->get( 'Version' ) ) . ')</p>';
+		echo '<h4>' . esc_html__( 'Themes', 'debugger-troubleshooter' ) . '</h4>';
+		echo '<p><strong>' . esc_html__( 'Active Theme:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( $active_theme_obj->get( 'Name' ) ) . ' (' . esc_html( $active_theme_obj->get( 'Version' ) ) . ')</p>';
 		if ( $inactive_themes_count > 0 ) {
-			echo '<p><strong>' . esc_html__( 'Inactive Themes:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( $inactive_themes_count ) . ' <a href="#" class="info-sub-list-toggle" data-target="themes-list">' . esc_html__( 'Show All', 'debug-troubleshooter' ) . '</a></p>';
+			echo '<p><strong>' . esc_html__( 'Inactive Themes:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( $inactive_themes_count ) . ' <a href="#" class="info-sub-list-toggle" data-target="themes-list">' . esc_html__( 'Show All', 'debugger-troubleshooter' ) . '</a></p>';
 		}
 
 		if ( ! empty( $all_themes ) ) {
@@ -329,12 +325,12 @@ class Debug_Troubleshooter {
 		$network_active_plugins = is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', array() ) ) : array();
 		$inactive_plugins_count = count( $all_plugins ) - count( $active_plugins ) - count( $network_active_plugins );
 
-		echo '<h4>' . esc_html__( 'Plugins', 'debug-troubleshooter' ) . '</h4>';
-		echo '<p><strong>' . esc_html__( 'Active Plugins:', 'debug-troubleshooter' ) . '</strong> ' . count( $active_plugins ) . '</p>';
+		echo '<h4>' . esc_html__( 'Plugins', 'debugger-troubleshooter' ) . '</h4>';
+		echo '<p><strong>' . esc_html__( 'Active Plugins:', 'debugger-troubleshooter' ) . '</strong> ' . count( $active_plugins ) . '</p>';
 		if ( is_multisite() ) {
-			echo '<p><strong>' . esc_html__( 'Network Active Plugins:', 'debug-troubleshooter' ) . '</strong> ' . count( $network_active_plugins ) . '</p>';
+			echo '<p><strong>' . esc_html__( 'Network Active Plugins:', 'debugger-troubleshooter' ) . '</strong> ' . count( $network_active_plugins ) . '</p>';
 		}
-		echo '<p><strong>' . esc_html__( 'Inactive Plugins:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( $inactive_plugins_count ) . ' <a href="#" class="info-sub-list-toggle" data-target="plugins-list">' . esc_html__( 'Show All', 'debug-troubleshooter' ) . '</a></p>';
+		echo '<p><strong>' . esc_html__( 'Inactive Plugins:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( $inactive_plugins_count ) . ' <a href="#" class="info-sub-list-toggle" data-target="plugins-list">' . esc_html__( 'Show All', 'debugger-troubleshooter' ) . '</a></p>';
 
 		if ( ! empty( $all_plugins ) ) {
 			echo '<ul id="plugins-list" class="info-sub-list hidden">';
@@ -354,49 +350,49 @@ class Debug_Troubleshooter {
 
 		// PHP Information Card
 		echo '<div class="debug-troubleshooter-card collapsible">';
-		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'PHP Information', 'debug-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
+		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'PHP Information', 'debugger-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
 		echo '<div class="card-collapsible-content hidden">';
-		echo '<p><strong>' . esc_html__( 'PHP Version:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( phpversion() ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Memory Limit:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'memory_limit' ) ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Peak Memory Usage:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( size_format( memory_get_peak_usage( true ) ) ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Post Max Size:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'post_max_size' ) ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Upload Max Filesize:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'upload_max_filesize' ) ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Max Execution Time:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'max_execution_time' ) ) . 's</p>';
-		echo '<p><strong>' . esc_html__( 'Max Input Vars:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'max_input_vars' ) ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'cURL Extension:', 'debug-troubleshooter' ) . '</strong> ' . ( extension_loaded( 'curl' ) ? 'Enabled' : 'Disabled' ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'GD Library:', 'debug-troubleshooter' ) . '</strong> ' . ( extension_loaded( 'gd' ) ? 'Enabled' : 'Disabled' ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Imagick Library:', 'debug-troubleshooter' ) . '</strong> ' . ( extension_loaded( 'imagick' ) ? 'Enabled' : 'Disabled' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'PHP Version:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( phpversion() ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Memory Limit:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'memory_limit' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Peak Memory Usage:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( size_format( memory_get_peak_usage( true ) ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Post Max Size:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'post_max_size' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Upload Max Filesize:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'upload_max_filesize' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Max Execution Time:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'max_execution_time' ) ) . 's</p>';
+		echo '<p><strong>' . esc_html__( 'Max Input Vars:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( ini_get( 'max_input_vars' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'cURL Extension:', 'debugger-troubleshooter' ) . '</strong> ' . ( extension_loaded( 'curl' ) ? 'Enabled' : 'Disabled' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'GD Library:', 'debugger-troubleshooter' ) . '</strong> ' . ( extension_loaded( 'gd' ) ? 'Enabled' : 'Disabled' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Imagick Library:', 'debugger-troubleshooter' ) . '</strong> ' . ( extension_loaded( 'imagick' ) ? 'Enabled' : 'Disabled' ) . '</p>';
 		echo '</div></div>';
 
 		// Database Information Card
 		echo '<div class="debug-troubleshooter-card collapsible">';
-		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'Database Information', 'debug-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
+		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'Database Information', 'debugger-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
 		echo '<div class="card-collapsible-content hidden">';
-		echo '<p><strong>' . esc_html__( 'Database Engine:', 'debug-troubleshooter' ) . '</strong> MySQL</p>';
+		echo '<p><strong>' . esc_html__( 'Database Engine:', 'debugger-troubleshooter' ) . '</strong> MySQL</p>';
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		// Direct query is necessary to get the MySQL server version. Caching is not beneficial for this one-off diagnostic read.
-		echo '<p><strong>' . esc_html__( 'MySQL Version:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( $wpdb->get_var( 'SELECT VERSION()' ) ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'MySQL Version:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( $wpdb->get_var( 'SELECT VERSION()' ) ) . '</p>';
 		// phpcs:enable
-		echo '<p><strong>' . esc_html__( 'DB Name:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( DB_NAME ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'DB Host:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( DB_HOST ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'DB Charset:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( DB_CHARSET ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'DB Collate:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( DB_COLLATE ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'DB Name:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( DB_NAME ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'DB Host:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( DB_HOST ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'DB Charset:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( DB_CHARSET ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'DB Collate:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( DB_COLLATE ) . '</p>';
 		echo '</div></div>';
 
 		// Server Information Card
 		echo '<div class="debug-troubleshooter-card collapsible">';
-		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'Server Information', 'debug-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
+		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'Server Information', 'debugger-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
 		echo '<div class="card-collapsible-content hidden">';
-		echo '<p><strong>' . esc_html__( 'Web Server:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : 'N/A' ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Server Protocol:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['SERVER_PROTOCOL'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_PROTOCOL'] ) ) : 'N/A' ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Server Address:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : 'N/A' ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Document Root:', 'debug-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['DOCUMENT_ROOT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['DOCUMENT_ROOT'] ) ) : 'N/A' ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'HTTPS:', 'debug-troubleshooter' ) . '</strong> ' . ( is_ssl() ? 'On' : 'Off' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Web Server:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : 'N/A' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Server Protocol:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['SERVER_PROTOCOL'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_PROTOCOL'] ) ) : 'N/A' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Server Address:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : 'N/A' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Document Root:', 'debugger-troubleshooter' ) . '</strong> ' . esc_html( isset( $_SERVER['DOCUMENT_ROOT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['DOCUMENT_ROOT'] ) ) : 'N/A' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'HTTPS:', 'debugger-troubleshooter' ) . '</strong> ' . ( is_ssl() ? 'On' : 'Off' ) . '</p>';
 		echo '</div></div>';
 
 		// WordPress Constants Card
 		echo '<div class="debug-troubleshooter-card collapsible">';
-		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'WordPress Constants', 'debug-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
+		echo '<div class="card-collapsible-header collapsed"><h3>' . esc_html__( 'WordPress Constants', 'debugger-troubleshooter' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
 		echo '<div class="card-collapsible-content hidden">';
 		echo '<ul>';
 		$wp_constants = array(
@@ -430,10 +426,10 @@ class Debug_Troubleshooter {
 				} elseif ( is_string( $value ) && ! empty( $value ) ) {
 					echo '"' . esc_html( $value ) . '"';
 				} else {
-					echo esc_html__( 'Defined but empty/non-scalar', 'debug-troubleshooter' );
+					echo esc_html__( 'Defined but empty/non-scalar', 'debugger-troubleshooter' );
 				}
 			} else {
-				echo esc_html__( 'Undefined', 'debug-troubleshooter' );
+				echo esc_html__( 'Undefined', 'debugger-troubleshooter' );
 			}
 			echo '</li>';
 		}
@@ -455,6 +451,7 @@ class Debug_Troubleshooter {
 			if ( ! empty( $this->troubleshoot_state ) ) {
 				// Define DONOTCACHEPAGE to prevent caching plugins from interfering.
 				if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+					// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
 					define( 'DONOTCACHEPAGE', true );
 				}
 				// Send no-cache headers as a secondary measure.
@@ -521,11 +518,11 @@ class Debug_Troubleshooter {
 		$log_file = WP_CONTENT_DIR . '/debug.log';
 
 		if ( ! file_exists( $log_file ) || ! is_readable( $log_file ) ) {
-			return __( 'debug.log file does not exist or is not readable.', 'debug-troubleshooter' );
+			return __( 'debug.log file does not exist or is not readable.', 'debugger-troubleshooter' );
 		}
 
 		if ( 0 === filesize( $log_file ) ) {
-			return __( 'debug.log is empty.', 'debug-troubleshooter' );
+			return __( 'debug.log is empty.', 'debugger-troubleshooter' );
 		}
 
 		// More efficient way to read last N lines of a large file.
@@ -544,7 +541,7 @@ class Debug_Troubleshooter {
 		check_ajax_referer( 'debug_troubleshoot_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'debug-troubleshooter' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'debugger-troubleshooter' ) ) );
 		}
 
 		$current_status = get_option( self::DEBUG_MODE_OPTION, 'disabled' );
@@ -552,9 +549,9 @@ class Debug_Troubleshooter {
 		update_option( self::DEBUG_MODE_OPTION, $new_status );
 
 		if ( 'enabled' === $new_status ) {
-			wp_send_json_success( array( 'message' => __( 'Live Debug mode enabled.', 'debug-troubleshooter' ) ) );
+			wp_send_json_success( array( 'message' => __( 'Live Debug mode enabled.', 'debugger-troubleshooter' ) ) );
 		} else {
-			wp_send_json_success( array( 'message' => __( 'Live Debug mode disabled.', 'debug-troubleshooter' ) ) );
+			wp_send_json_success( array( 'message' => __( 'Live Debug mode disabled.', 'debugger-troubleshooter' ) ) );
 		}
 	}
 
@@ -565,7 +562,7 @@ class Debug_Troubleshooter {
 		check_ajax_referer( 'debug_troubleshoot_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'debug-troubleshooter' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'debugger-troubleshooter' ) ) );
 		}
 
 		global $wp_filesystem;
@@ -578,15 +575,15 @@ class Debug_Troubleshooter {
 
 		if ( $wp_filesystem->exists( $log_file ) ) {
 			if ( ! $wp_filesystem->is_writable( $log_file ) ) {
-				wp_send_json_error( array( 'message' => __( 'Debug log is not writable.', 'debug-troubleshooter' ) ) );
+				wp_send_json_error( array( 'message' => __( 'Debug log is not writable.', 'debugger-troubleshooter' ) ) );
 			}
 			if ( $wp_filesystem->put_contents( $log_file, '' ) ) {
-				wp_send_json_success( array( 'message' => __( 'Debug log cleared successfully.', 'debug-troubleshooter' ) ) );
+				wp_send_json_success( array( 'message' => __( 'Debug log cleared successfully.', 'debugger-troubleshooter' ) ) );
 			} else {
-				wp_send_json_error( array( 'message' => __( 'Could not clear the debug log.', 'debug-troubleshooter' ) ) );
+				wp_send_json_error( array( 'message' => __( 'Could not clear the debug log.', 'debugger-troubleshooter' ) ) );
 			}
 		} else {
-			wp_send_json_success( array( 'message' => __( 'Debug log does not exist.', 'debug-troubleshooter' ) ) );
+			wp_send_json_success( array( 'message' => __( 'Debug log does not exist.', 'debugger-troubleshooter' ) ) );
 		}
 	}
 
@@ -642,7 +639,7 @@ class Debug_Troubleshooter {
 		check_ajax_referer( 'debug_troubleshoot_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'debug-troubleshooter' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'debugger-troubleshooter' ) ) );
 		}
 
 		$enable_mode = isset( $_POST['enable'] ) ? (bool) $_POST['enable'] : false;
@@ -668,7 +665,7 @@ class Debug_Troubleshooter {
 				'httponly' => true,
 				'secure'   => is_ssl(),
 			) );
-			wp_send_json_success( array( 'message' => __( 'Troubleshooting mode activated.', 'debug-troubleshooter' ) ) );
+			wp_send_json_success( array( 'message' => __( 'Troubleshooting mode activated.', 'debugger-troubleshooter' ) ) );
 		} else {
 			// Unset the cookie to exit troubleshooting mode.
 			setcookie( self::TROUBLESHOOT_COOKIE, '', array(
@@ -679,7 +676,7 @@ class Debug_Troubleshooter {
 				'httponly' => true,
 				'secure'   => is_ssl(),
 			) );
-			wp_send_json_success( array( 'message' => __( 'Troubleshooting mode deactivated.', 'debug-troubleshooter' ) ) );
+			wp_send_json_success( array( 'message' => __( 'Troubleshooting mode deactivated.', 'debugger-troubleshooter' ) ) );
 		}
 	}
 
@@ -690,7 +687,7 @@ class Debug_Troubleshooter {
 		check_ajax_referer( 'debug_troubleshoot_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'debug-troubleshooter' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'debugger-troubleshooter' ) ) );
 		}
 
 		// Sanitize inputs.
@@ -733,7 +730,7 @@ class Debug_Troubleshooter {
 			'httponly' => true,
 			'secure'   => is_ssl(),
 		) );
-		wp_send_json_success( array( 'message' => __( 'Troubleshooting state updated successfully. Refreshing page...', 'debug-troubleshooter' ) ) );
+		wp_send_json_success( array( 'message' => __( 'Troubleshooting state updated successfully. Refreshing page...', 'debugger-troubleshooter' ) ) );
 	}
 
 	/**
@@ -745,9 +742,9 @@ class Debug_Troubleshooter {
 			?>
 			<div class="notice notice-warning is-dismissible debug-troubleshoot-notice">
 				<p>
-					<strong><?php esc_html_e( 'Troubleshooting Mode is Active!', 'debug-troubleshooter' ); ?></strong>
-					<?php esc_html_e( 'You are currently in a special troubleshooting session. Your simulated theme and plugin states are not affecting the live site for other visitors.', 'debug-troubleshooter' ); ?>
-					<a href="<?php echo esc_url( $troubleshoot_url ); ?>"><?php esc_html_e( 'Go to Debugger & Troubleshooter page to manage.', 'debug-troubleshooter' ); ?></a>
+					<strong><?php esc_html_e( 'Troubleshooting Mode is Active!', 'debugger-troubleshooter' ); ?></strong>
+					<?php esc_html_e( 'You are currently in a special troubleshooting session. Your simulated theme and plugin states are not affecting the live site for other visitors.', 'debugger-troubleshooter' ); ?>
+					<a href="<?php echo esc_url( $troubleshoot_url ); ?>"><?php esc_html_e( 'Go to Debugger & Troubleshooter page to manage.', 'debugger-troubleshooter' ); ?></a>
 				</p>
 			</div>
 			<?php
@@ -797,20 +794,20 @@ class Debug_Troubleshooter {
 		?>
 		<div class="user-simulation-controls">
 			<div class="debug-troubleshooter-card">
-				<h3><?php esc_html_e( 'Select User to Simulate', 'debug-troubleshooter' ); ?></h3>
+				<h3><?php esc_html_e( 'Select User to Simulate', 'debugger-troubleshooter' ); ?></h3>
 				<div class="flex items-center gap-4">
 					<select id="simulate-user-select" class="regular-text">
-						<option value=""><?php esc_html_e( '-- Select a User --', 'debug-troubleshooter' ); ?></option>
+						<option value=""><?php esc_html_e( '-- Select a User --', 'debugger-troubleshooter' ); ?></option>
 						<?php foreach ( $users as $user ) : ?>
 							<option value="<?php echo esc_attr( $user->ID ); ?>">
 								<?php echo esc_html( $user->display_name . ' (' . $user->user_login . ')' ); ?>
 							</option>
 						<?php endforeach; ?>
 					</select>
-					<button id="simulate-user-btn" class="button button-primary"><?php esc_html_e( 'Simulate User', 'debug-troubleshooter' ); ?></button>
+					<button id="simulate-user-btn" class="button button-primary"><?php esc_html_e( 'Simulate User', 'debugger-troubleshooter' ); ?></button>
 				</div>
 				<p class="description mt-2">
-					<?php esc_html_e( 'Note: You can exit the simulation at any time using the "Exit Simulation" button in the Admin Bar.', 'debug-troubleshooter' ); ?>
+					<?php esc_html_e( 'Note: You can exit the simulation at any time using the "Exit Simulation" button in the Admin Bar.', 'debugger-troubleshooter' ); ?>
 				</p>
 			</div>
 		</div>
@@ -826,11 +823,11 @@ class Debug_Troubleshooter {
 		if ( $this->is_simulating_user() ) {
 			$wp_admin_bar->add_node( array(
 				'id'    => 'debug-troubleshooter-exit-sim',
-				'title' => '<span style="color: #ff4444; font-weight: bold;">' . __( 'Exit User Simulation', 'debug-troubleshooter' ) . '</span>',
+				'title' => '<span style="color: #ff4444; font-weight: bold;">' . __( 'Exit User Simulation', 'debugger-troubleshooter' ) . '</span>',
 				'href'  => '#',
 				'meta'  => array(
 					'onclick' => 'debugTroubleshootExitSimulation(); return false;',
-					'title'   => __( 'Click to return to your original user account', 'debug-troubleshooter' ),
+					'title'   => __( 'Click to return to your original user account', 'debugger-troubleshooter' ),
 				),
 			) );
 
@@ -848,7 +845,7 @@ class Debug_Troubleshooter {
 		?>
 		<script type="text/javascript">
 		function debugTroubleshootExitSimulation() {
-			if (confirm('<?php echo esc_js( __( 'Are you sure you want to exit User Simulation?', 'debug-troubleshooter' ) ); ?>')) {
+			if (confirm('<?php echo esc_js( __( 'Are you sure you want to exit User Simulation?', 'debugger-troubleshooter' ) ); ?>')) {
 				var data = new FormData();
 				data.append('action', 'debug_troubleshoot_toggle_simulate_user');
 				data.append('enable', '0');
@@ -875,7 +872,7 @@ class Debug_Troubleshooter {
 		// Since this is a dev tool and we are just clearing a cookie, the risk is low, but ideally we'd check a nonce.
 		// For the "Enter" action (POST), we definitely check the nonce.
 		
-		$is_post = 'POST' === $_SERVER['REQUEST_METHOD'];
+		$is_post = isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'];
 		if ( $is_post ) {
 			check_ajax_referer( 'debug_troubleshoot_nonce', 'nonce' );
 		}
@@ -883,7 +880,7 @@ class Debug_Troubleshooter {
 		if ( ! current_user_can( 'manage_options' ) && ! $this->is_simulating_user() ) {
 			// Only allow admins to START simulation.
 			// Anyone (simulated user) can STOP simulation.
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'debug-troubleshooter' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'debugger-troubleshooter' ) ) );
 		}
 
 		$enable = isset( $_REQUEST['enable'] ) ? (bool) $_REQUEST['enable'] : false;
@@ -899,7 +896,7 @@ class Debug_Troubleshooter {
 				'httponly' => true,
 				'secure'   => is_ssl(),
 			) );
-			wp_send_json_success( array( 'message' => __( 'User simulation activated. Reloading...', 'debug-troubleshooter' ) ) );
+			wp_send_json_success( array( 'message' => __( 'User simulation activated. Reloading...', 'debugger-troubleshooter' ) ) );
 		} else {
 			// Clear cookie
 			setcookie( self::SIMULATE_USER_COOKIE, '', array(
@@ -913,11 +910,11 @@ class Debug_Troubleshooter {
 			
 			if ( ! $is_post ) {
 				// If it was a GET request (from Admin Bar), redirect back to home or dashboard.
-				wp_redirect( admin_url() );
+				wp_safe_redirect( admin_url() );
 				exit;
 			}
 			
-			wp_send_json_success( array( 'message' => __( 'User simulation deactivated.', 'debug-troubleshooter' ) ) );
+			wp_send_json_success( array( 'message' => __( 'User simulation deactivated.', 'debugger-troubleshooter' ) ) );
 		}
 	}
 }

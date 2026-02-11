@@ -4,7 +4,7 @@ Tags: debug, troubleshoot, php info, developer
 Requires at least: 5.0
 Requires PHP: 7.4
 Tested up to: 6.8
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 Donate link: https://paypal.me/jhimross28
@@ -87,8 +87,13 @@ A: The plugin uses the `plugins_loaded` hook to define the `WP_DEBUG` constants 
 2.  An expanded view of the Site Information card, showing detailed lists of themes and plugins.
 3.  An example of the admin notice when Troubleshooting Mode is active.
 4.  The Live Debugging section with the log viewer.
+5.  The User Role Simulator feature to switch to other user.
 
 == Changelog ==
+
+= 1.3.1 - 2025-11-21 =
+* **Fix:** Resolved a critical issue where admin scripts were not loading due to a hook name mismatch.
+* **Fix:** Addressed WordPress coding standard issues (deprecated functions, security hardening).
 
 = 1.3.0 - 2025-11-21 =
 * **Feature:** Added "User Role Simulator" to view the site as any user or role for the current session.
@@ -118,6 +123,9 @@ A: The plugin uses the `plugins_loaded` hook to define the `WP_DEBUG` constants 
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.3.1 =
+This release fixes a critical bug affecting the plugin's layout and functionality, and improves code standards.
 
 = 1.3.0 =
 Introduces the User Role Simulator feature, allowing you to safely view the site as other users or roles for testing permissions.
